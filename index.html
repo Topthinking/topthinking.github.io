@@ -150,6 +150,66 @@
         
           <section id="main">
   
+    <article id="post-front/Redux&amp;TypeScript最佳实践"  class="article article-type-post" itemscope itemprop="blogPost" >
+  <div id="articleInner" class="clearfix post-1016 post type-post status-publish format-standard has-post-thumbnail hentry category-template-2 category-uncategorized tag-codex tag-edge-case tag-featured-image tag-image tag-template">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 class="thumb" itemprop="name">
+      <a class="article-title" href="/2021/08/13/front/Redux&TypeScript%E6%9C%80%E4%BD%B3%E5%AE%9E%E8%B7%B5/">Redux + TypeScript最佳实践</a>
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-meta">
+      
+	<a href="/2021/08/13/front/Redux&TypeScript%E6%9C%80%E4%BD%B3%E5%AE%9E%E8%B7%B5/" class="article-date">
+	  <time datetime="2021-08-13T00:46:22.272Z" itemprop="datePublished">八月 13, 2021</time>
+	</a>
+
+      
+	<span class="ico-folder"></span>
+    <a class="article-category-link" href="/categories/%E5%A4%A7%E5%89%8D%E7%AB%AF/">大前端</a>
+ 
+      
+    </div>
+    <div class="article-entry" itemprop="articleBody">
+      
+        
+
+          
+          <div class="entry-summary">
+          这里简单的介绍了redux结合typescript的使用技巧，方便在开发的时候，利用typescript的特点，对数据类型进行校验和提示
+
+        
+          <p class="article-more-link">
+            <a href="/2021/08/13/front/Redux&TypeScript%E6%9C%80%E4%BD%B3%E5%AE%9E%E8%B7%B5/#more">阅读全文</a>
+          </p>
+        </div>
+      
+    </div>
+    <footer class="entry-meta entry-footer">
+      
+	<span class="ico-folder"></span>
+    <a class="article-category-link" href="/categories/%E5%A4%A7%E5%89%8D%E7%AB%AF/">大前端</a>
+
+      
+  <span class="ico-tags"></span>
+  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/redux/" rel="tag">redux</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/typescript/" rel="tag">typescript</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/web/" rel="tag">web</a></li></ul>
+
+      
+    </footer>
+    <hr class="entry-footer-hr">
+  </div>
+  
+</article>
+
+<!-- Table of Contents -->
+
+  
     <article id="post-front/SEO策略之页面直出"  class="article article-type-post" itemscope itemprop="blogPost" >
   <div id="articleInner" class="clearfix post-1016 post type-post status-publish format-standard has-post-thumbnail hentry category-template-2 category-uncategorized tag-codex tag-edge-case tag-featured-image tag-image tag-template">
     
@@ -726,78 +786,6 @@ C = N * p</script><ul>
 <!-- Table of Contents -->
 
   
-    <article id="post-cross-domain"  class="article article-type-post" itemscope itemprop="blogPost" >
-  <div id="articleInner" class="clearfix post-1016 post type-post status-publish format-standard has-post-thumbnail hentry category-template-2 category-uncategorized tag-codex tag-edge-case tag-featured-image tag-image tag-template">
-    
-    
-      <header class="article-header">
-        
-  
-    <h1 class="thumb" itemprop="name">
-      <a class="article-title" href="/2020/12/16/cross-domain/">跨域漫谈</a>
-    </h1>
-  
-
-      </header>
-    
-    <div class="article-meta">
-      
-	<a href="/2020/12/16/cross-domain/" class="article-date">
-	  <time datetime="2020-12-16T15:23:30.577Z" itemprop="datePublished">十二月 16, 2020</time>
-	</a>
-
-      
-	<span class="ico-folder"></span>
-    <a class="article-category-link" href="/categories/%E5%A4%A7%E5%89%8D%E7%AB%AF/">大前端</a>
- 
-      
-    </div>
-    <div class="article-entry" itemprop="articleBody">
-      
-        <blockquote>
-<p>这里主要描述跨域的一些细节</p>
-</blockquote>
-<h2 id="set-cookie"><a href="#set-cookie" class="headerlink" title="set-cookie"></a><code>set-cookie</code></h2><p><img src="/assets/images/post_imgs/c-1.png" alt="set-cookie被阻止"></p>
-<p>浏览器在请求一个设置 session 的接口，如果和当前域名不一致，则出现上述这种情况</p>
-<p>比如当前浏览器访问地址：<code>http://www.example.com</code><br>如果请求接口：<code>http://www.test.com/api</code>，那么就会出现上述提示，这种提示就表明了该接口下的 cookie 没有正常写入，即 cookie 写入失败</p>
-<p>解决方案： - session 配置设置如下<br><code>go session.Options(sessions.Options&#123;MaxAge: 3600 * 12, Path: &quot;/&quot;, HttpOnly: true, SameSite: http.SameSiteNoneMode, Secure: true&#125;)</code> - 请求接口使用<code>https</code><br>即访问地址：<code>https://www.test.com/api</code>，那么 cookie 就可以正常写入了</p>
-<blockquote>
-<p>但是内部系统，往往没有使用 https，如果还需要这种情况进行 cookie 写入，就可以考虑自动提交 form 表单</p>
-</blockquote>
-<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// form提交js代码说明</span></span><br><span class="line"><span class="keyword">const</span> div = <span class="built_in">document</span>.createElement(<span class="string">&quot;div&quot;</span>);</span><br><span class="line">div.innerHTML = <span class="string">`</span></span><br><span class="line"><span class="string">    &lt;form id=&quot;login-form&quot; method=&quot;POST&quot; action=&quot;http://www.test.com/api&quot;&gt;</span></span><br><span class="line"><span class="string">        &lt;input name=&quot;secret&quot; type=&#x27;hidden&#x27; value=&#x27;<span class="subst">$&#123;responseData.data&#125;</span>&#x27;/&gt;</span></span><br><span class="line"><span class="string">    &lt;/form&gt;</span></span><br><span class="line"><span class="string">`</span>;</span><br><span class="line"><span class="built_in">document</span>.body.appendChild(div);</span><br><span class="line"></span><br><span class="line"><span class="keyword">const</span> run = <span class="built_in">document</span>.createElement(<span class="string">&quot;script&quot;</span>);</span><br><span class="line">run.innerHTML = <span class="string">`document.getElementById(&quot;login-form&quot;).submit();`</span>;</span><br><span class="line"><span class="built_in">document</span>.body.appendChild(run);</span><br></pre></td></tr></table></figure>
-<p>这样，cookie 就正常在<code>www.test.com</code>这个域名下写入了，这个时候别忘了加个回调地址，再重定向回原来访问的页面</p>
-<h2 id="已经注入-cookie，跨域请求时，cookie-协带说明"><a href="#已经注入-cookie，跨域请求时，cookie-协带说明" class="headerlink" title="已经注入 cookie，跨域请求时，cookie 协带说明"></a>已经注入 cookie，跨域请求时，cookie 协带说明</h2><blockquote>
-<p>通常，我们使用 fetch 函数请求接口，服务端解除跨域限制且支持 cookie 接收，一般这样设置</p>
-</blockquote>
-<h3 id="前端"><a href="#前端" class="headerlink" title="前端"></a>前端</h3><figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">fetch(<span class="string">&quot;http://www.test.com/api/list&quot;</span>, &#123;</span><br><span class="line">  <span class="comment">// 支持携带cookie</span></span><br><span class="line">  credentials: <span class="string">&quot;include&quot;</span>,</span><br><span class="line">&#125;);</span><br></pre></td></tr></table></figure>
-<h3 id="后端"><a href="#后端" class="headerlink" title="后端"></a>后端</h3><figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// c表示 *gin.Context</span></span><br><span class="line"></span><br><span class="line">method := c.Request.Method</span><br><span class="line">origin := c.Request.Header.Get(<span class="string">&quot;Origin&quot;</span>)</span><br><span class="line"></span><br><span class="line"><span class="keyword">if</span> origin != <span class="string">&quot;&quot;</span> &#123;</span><br><span class="line">    c.Header(<span class="string">&quot;Access-Control-Allow-Origin&quot;</span>, origin)</span><br><span class="line">    <span class="comment">//服务器支持的所有跨域请求的方法</span></span><br><span class="line">    c.Header(<span class="string">&quot;Access-Control-Allow-Methods&quot;</span>, <span class="string">&quot;POST, GET, OPTIONS, PUT, DELETE, UPDATE, PATCH&quot;</span>)</span><br><span class="line">    <span class="comment">// 允许跨域设置可以返回其他子段，可以自定义字段</span></span><br><span class="line">    c.Header(<span class="string">&quot;Access-Control-Allow-Headers&quot;</span>, <span class="string">&quot;Content-Type,AccessToken,X-CSRF-Token,Authorization,Token,ops_env,ops_version&quot;</span>)</span><br><span class="line">    <span class="comment">// 允许浏览器（客户端）可以解析的头部 （重要）</span></span><br><span class="line">    c.Header(<span class="string">&quot;Access-Control-Expose-Headers&quot;</span>, <span class="string">&quot;Content-Length, Access-Control-Allow-Origin, Access-Control-Allow-Headers, Content-Type&quot;</span>)</span><br><span class="line">    <span class="comment">// 允许客户端传递校验信息比如 cookie (重要)</span></span><br><span class="line">    c.Header(<span class="string">&quot;Access-Control-Allow-Credentials&quot;</span>, <span class="string">&quot;true&quot;</span>)</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">//放行所有OPTIONS方法</span></span><br><span class="line"><span class="keyword">if</span> method == <span class="string">&quot;OPTIONS&quot;</span> &#123;</span><br><span class="line">    c.AbortWithStatus(http.StatusNoContent)</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<blockquote>
-<p>但是注意，这个时候，你的 cookie 并没有带到后端，因为浏览器访问的地址是<code>http://www.example.com</code>，但是请求的接口是<code>http://www.test.com/api/list</code>，</p>
-<p>也就说，<code>http://www.test.com/api/</code>这里的 cookie 写入，肯定是在<code>.test.com</code>这个域名下的，而由于当前访问的域名是<code>.example.com</code>，这个时候 cookie 就没有办法带过去</p>
-<p>只有请求这种地址的跨域是可以的<code>http://api.example.com/list</code></p>
-</blockquote>
-
-      
-    </div>
-    <footer class="entry-meta entry-footer">
-      
-	<span class="ico-folder"></span>
-    <a class="article-category-link" href="/categories/%E5%A4%A7%E5%89%8D%E7%AB%AF/">大前端</a>
-
-      
-  <span class="ico-tags"></span>
-  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/web/" rel="tag">web</a></li></ul>
-
-      
-    </footer>
-    <hr class="entry-footer-hr">
-  </div>
-  
-</article>
-
-<!-- Table of Contents -->
-
-  
 
 
   <nav id="page-nav">
@@ -895,6 +883,18 @@ C = N * p</script><ul>
               <div class="widget-entry-summary" style="margin: 0;">
             
 
+              <h6 style="margin: 0;"><a href="/2021/08/13/front/Redux&TypeScript%E6%9C%80%E4%BD%B3%E5%AE%9E%E8%B7%B5/">Redux + TypeScript最佳实践</a></h6>
+              <span>八月 13, 2021</span>
+            </div>
+
+          </li>
+        
+          <li class="clearfix">
+
+            
+              <div class="widget-entry-summary" style="margin: 0;">
+            
+
               <h6 style="margin: 0;"><a href="/2021/05/26/front/SEO%E7%AD%96%E7%95%A5%E4%B9%8B%E9%A1%B5%E9%9D%A2%E7%9B%B4%E5%87%BA/">SEO策略之页面直出</a></h6>
               <span>五月 26, 2021</span>
             </div>
@@ -949,18 +949,6 @@ C = N * p</script><ul>
 
           </li>
         
-          <li class="clearfix">
-
-            
-              <div class="widget-entry-summary" style="margin: 0;">
-            
-
-              <h6 style="margin: 0;"><a href="/2021/05/25/go/mongo/">go语言之mongo-db操作</a></h6>
-              <span>五月 25, 2021</span>
-            </div>
-
-          </li>
-        
       </ul>
     </div>
   </div>
@@ -970,7 +958,7 @@ C = N * p</script><ul>
   <div class="widget-wrap">
     <h3 class="widget-title">分类</h3>
     <div class="widget">
-      <ul class="category-list"><li class="category-list-item"><a class="category-list-link" href="/categories/%E5%90%8E%E8%8A%B1%E5%9B%AD/">后花园</a><span class="category-list-count">3</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/%E5%A4%A7%E5%89%8D%E7%AB%AF/">大前端</a><span class="category-list-count">5</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/%E5%AE%89%E5%85%A8/">安全</a><span class="category-list-count">1</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/%E6%9C%8D%E5%8A%A1%E7%AB%AF/">服务端</a><span class="category-list-count">4</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/%E9%80%9A%E7%94%A8%E6%8A%80%E6%9C%AF/">通用技术</a><span class="category-list-count">1</span></li></ul>
+      <ul class="category-list"><li class="category-list-item"><a class="category-list-link" href="/categories/%E5%90%8E%E8%8A%B1%E5%9B%AD/">后花园</a><span class="category-list-count">3</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/%E5%A4%A7%E5%89%8D%E7%AB%AF/">大前端</a><span class="category-list-count">6</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/%E5%AE%89%E5%85%A8/">安全</a><span class="category-list-count">1</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/%E6%9C%8D%E5%8A%A1%E7%AB%AF/">服务端</a><span class="category-list-count">4</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/%E9%80%9A%E7%94%A8%E6%8A%80%E6%9C%AF/">通用技术</a><span class="category-list-count">1</span></li></ul>
     </div>
   </div>
 
@@ -980,7 +968,7 @@ C = N * p</script><ul>
   <div class="widget-wrap">
     <h3 class="widget-title">标签</h3>
     <div class="widget">
-      <ul class="tag-list" itemprop="keywords"><li class="tag-list-item"><a class="tag-list-link" href="/tags/docker/" rel="tag">docker</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/electron/" rel="tag">electron</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/go/" rel="tag">go</a><span class="tag-list-count">3</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/mongo/" rel="tag">mongo</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/ssr/" rel="tag">ssr</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/tips/" rel="tag">tips</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/web/" rel="tag">web</a><span class="tag-list-count">4</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/webpack/" rel="tag">webpack</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/%E5%90%8E%E7%AB%AF/" rel="tag">后端</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/%E5%B7%A5%E4%BD%9C/" rel="tag">工作</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/%E6%8A%95%E8%B5%84/" rel="tag">投资</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/%E6%9D%82%E8%B0%88/" rel="tag">杂谈</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/%E7%AE%97%E6%B3%95/" rel="tag">算法</a><span class="tag-list-count">1</span></li></ul>
+      <ul class="tag-list" itemprop="keywords"><li class="tag-list-item"><a class="tag-list-link" href="/tags/docker/" rel="tag">docker</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/electron/" rel="tag">electron</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/go/" rel="tag">go</a><span class="tag-list-count">3</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/mongo/" rel="tag">mongo</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/redux/" rel="tag">redux</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/ssr/" rel="tag">ssr</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/tips/" rel="tag">tips</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/typescript/" rel="tag">typescript</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/web/" rel="tag">web</a><span class="tag-list-count">5</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/webpack/" rel="tag">webpack</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/%E5%90%8E%E7%AB%AF/" rel="tag">后端</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/%E5%B7%A5%E4%BD%9C/" rel="tag">工作</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/%E6%8A%95%E8%B5%84/" rel="tag">投资</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/%E6%9D%82%E8%B0%88/" rel="tag">杂谈</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/%E7%AE%97%E6%B3%95/" rel="tag">算法</a><span class="tag-list-count">1</span></li></ul>
     </div>
   </div>
 
@@ -990,7 +978,7 @@ C = N * p</script><ul>
   <div class="widget-wrap">
     <h3 class="widget-title">标签云</h3>
     <div class="widget tagcloud">
-      <a href="/tags/docker/" style="font-size: 10px;">docker</a> <a href="/tags/electron/" style="font-size: 10px;">electron</a> <a href="/tags/go/" style="font-size: 15px;">go</a> <a href="/tags/mongo/" style="font-size: 10px;">mongo</a> <a href="/tags/ssr/" style="font-size: 10px;">ssr</a> <a href="/tags/tips/" style="font-size: 10px;">tips</a> <a href="/tags/web/" style="font-size: 20px;">web</a> <a href="/tags/webpack/" style="font-size: 10px;">webpack</a> <a href="/tags/%E5%90%8E%E7%AB%AF/" style="font-size: 10px;">后端</a> <a href="/tags/%E5%B7%A5%E4%BD%9C/" style="font-size: 10px;">工作</a> <a href="/tags/%E6%8A%95%E8%B5%84/" style="font-size: 10px;">投资</a> <a href="/tags/%E6%9D%82%E8%B0%88/" style="font-size: 10px;">杂谈</a> <a href="/tags/%E7%AE%97%E6%B3%95/" style="font-size: 10px;">算法</a>
+      <a href="/tags/docker/" style="font-size: 10px;">docker</a> <a href="/tags/electron/" style="font-size: 10px;">electron</a> <a href="/tags/go/" style="font-size: 15px;">go</a> <a href="/tags/mongo/" style="font-size: 10px;">mongo</a> <a href="/tags/redux/" style="font-size: 10px;">redux</a> <a href="/tags/ssr/" style="font-size: 10px;">ssr</a> <a href="/tags/tips/" style="font-size: 10px;">tips</a> <a href="/tags/typescript/" style="font-size: 10px;">typescript</a> <a href="/tags/web/" style="font-size: 20px;">web</a> <a href="/tags/webpack/" style="font-size: 10px;">webpack</a> <a href="/tags/%E5%90%8E%E7%AB%AF/" style="font-size: 10px;">后端</a> <a href="/tags/%E5%B7%A5%E4%BD%9C/" style="font-size: 10px;">工作</a> <a href="/tags/%E6%8A%95%E8%B5%84/" style="font-size: 10px;">投资</a> <a href="/tags/%E6%9D%82%E8%B0%88/" style="font-size: 10px;">杂谈</a> <a href="/tags/%E7%AE%97%E6%B3%95/" style="font-size: 10px;">算法</a>
     </div>
   </div>
 
@@ -1000,7 +988,7 @@ C = N * p</script><ul>
     <h3 class="widget-title">归档</h3>
 
     <div class="widget">
-      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2021/05/">五月 2021</a><span class="archive-list-count">8</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/12/">十二月 2020</a><span class="archive-list-count">2</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/11/">十一月 2020</a><span class="archive-list-count">3</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/08/">八月 2020</a><span class="archive-list-count">1</span></li></ul>
+      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2021/08/">八月 2021</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2021/05/">五月 2021</a><span class="archive-list-count">8</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/12/">十二月 2020</a><span class="archive-list-count">2</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/11/">十一月 2020</a><span class="archive-list-count">3</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/08/">八月 2020</a><span class="archive-list-count">1</span></li></ul>
     </div>
   </div>
 
