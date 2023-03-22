@@ -1,0 +1,439 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <meta charset="utf-8">
+  
+  <title>最大子序和 | Topthinking</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+  
+  <meta name="keywords" content="算法" />
+  
+  
+  
+  
+  <meta name="description" content="给定一个整数数组 nums ，找到一个具有最大和的连续子数组（子数组最少包含一个元素），返回其最大和。  每个算法，用生活中的例子加以解释，就会记忆深刻，理解透彻了">
+<meta property="og:type" content="article">
+<meta property="og:title" content="最大子序和">
+<meta property="og:url" content="https://topthinking.gitee.io/2021/10/03/leetcode/%E6%9C%80%E5%A4%A7%E5%AD%90%E5%BA%8F%E5%92%8C/index.html">
+<meta property="og:site_name" content="Topthinking">
+<meta property="og:description" content="给定一个整数数组 nums ，找到一个具有最大和的连续子数组（子数组最少包含一个元素），返回其最大和。  每个算法，用生活中的例子加以解释，就会记忆深刻，理解透彻了">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2021-10-03T06:18:08.960Z">
+<meta property="article:modified_time" content="2022-01-12T14:12:06.654Z">
+<meta property="article:author" content="topthinking">
+<meta property="article:tag" content="算法">
+<meta name="twitter:card" content="summary">
+  
+  <link rel="alternate" href="/atom.xml" title="Topthinking" type="application/atom+xml">
+  
+  <link rel="icon" href="/css/images/favicon.png">
+  
+  <link href="//fonts.googleapis.com/css?family=Source+Code+Pro" rel="stylesheet" type="text/css">
+  
+  <link href="https://fonts.googleapis.com/css?family=Open+Sans|Montserrat:700" rel="stylesheet" type="text/css">
+  <link href="https://fonts.googleapis.com/css?family=Roboto:400,300,300italic,400italic" rel="stylesheet" type="text/css">
+  <link href="//cdn.bootcss.com/font-awesome/4.6.3/css/font-awesome.min.css" rel="stylesheet">
+  <style type="text/css">
+    @font-face {
+      font-family: futura-pt;
+      src: url(https://use.typekit.net/af/9749f0/00000000000000000001008f/27/l?subset_id=2&fvd=n5) format("woff2");
+      font-weight: 500;
+      font-style: normal;
+    }
+
+    @font-face {
+      font-family: futura-pt;
+      src: url(https://use.typekit.net/af/90cf9f/000000000000000000010091/27/l?subset_id=2&fvd=n7) format("woff2");
+      font-weight: 500;
+      font-style: normal;
+    }
+
+    @font-face {
+      font-family: futura-pt;
+      src: url(https://use.typekit.net/af/8a5494/000000000000000000013365/27/l?subset_id=2&fvd=n4) format("woff2");
+      font-weight: lighter;
+      font-style: normal;
+    }
+
+    @font-face {
+      font-family: futura-pt;
+      src: url(https://use.typekit.net/af/d337d8/000000000000000000010095/27/l?subset_id=2&fvd=i4) format("woff2");
+      font-weight: 400;
+      font-style: italic;
+    }
+  </style>
+
+  <link rel="stylesheet" id="athemes-headings-fonts-css" href="//fonts.googleapis.com/css?family=Yanone+Kaffeesatz%3A200%2C300%2C400%2C700&amp;ver=4.6.1" type="text/css" media="all">
+
+  <link rel="stylesheet" id="athemes-headings-fonts-css" href="//fonts.googleapis.com/css?family=Oswald%3A300%2C400%2C700&amp;ver=4.6.1" type="text/css" media="all">
+  
+<link rel="stylesheet" href="/css/style.css">
+
+
+  
+<script src="/js/jquery-3.1.1.min.js"></script>
+
+
+  <!-- Bootstrap core CSS -->
+  <link rel="stylesheet" href="/css/bootstrap.css">
+  <link rel="stylesheet" href="/css/fashion.css">
+  <link rel="stylesheet" href="/css/glyphs.css">
+
+<meta name="generator" content="Hexo 5.0.2"></head>
+
+
+  <body data-spy="scroll" data-target="#toc" data-offset="50">
+
+
+  
+<!--  
+  <div class="site-header-image">
+    <img id="originBg" width="100%" alt="Hike News" src="">
+  </div>
+
+  <div id="header-blur" class="site-header-image blur" style="position: absolute; top:0; height: 207px; min-height: 207px; min-width: 100%;">
+    <img id="blurBg" width="100%" style="top: 96%" alt="Hike News" src="">
+  </div>
+
+  <script>
+        var imgUrls = "css/images/pose01.jpg,https://source.unsplash.com/collection/954550/1920x1080,https://source.unsplash.com/collection/954550/1920x1081".split(",");
+        var random = Math.floor((Math.random() * imgUrls.length ));
+        if (imgUrls[random].startsWith('http') || imgUrls[random].indexOf('://') >= 0) {
+          document.getElementById("originBg").src=imgUrls[random];
+          document.getElementById("blurBg").src=imgUrls[random];
+        } else {
+          document.getElementById("originBg").src='/' + imgUrls[random];
+          document.getElementById("blurBg").src='/' + imgUrls[random];
+        }
+    </script>
+-->
+
+
+
+<header id="allheader" class="site-header" role="banner">
+  <div class="clearfix container">
+      <div class="site-branding">
+
+          <h1 class="site-title">
+            
+              <a href="/" title="Topthinking" rel="home"> Topthinking </a>
+            
+          </h1>
+          
+          
+            <div class="site-description">你也许什么都没有错，只是老了<br/>愿你历尽千帆，归来仍是少年</div>
+          
+            
+          <nav id="main-navigation" class="main-navigation" role="navigation">
+            <a class="nav-open">Menu</a>
+            <a class="nav-close">Close</a>
+
+            <div class="clearfix sf-menu">
+              <ul id="main-nav" class="menu sf-js-enabled sf-arrows"  style="touch-action: pan-y;">
+                
+                  <li class="menu-item menu-item-type-custom menu-item-object-custom menu-item-home menu-item-1663" name="home">
+                    <a class="" href="/">
+                      首页 
+                    </a> 
+                  </li>
+                
+                  <li class="menu-item menu-item-type-custom menu-item-object-custom menu-item-home menu-item-1663" name="archives">
+                    <a class="" href="/archives">
+                      归档 
+                    </a> 
+                  </li>
+                
+                  <li class="menu-item menu-item-type-custom menu-item-object-custom menu-item-home menu-item-1663" name="categories">
+                    <a class="" href="/categories">
+                      分类 
+                    </a> 
+                  </li>
+                
+                  <li class="menu-item menu-item-type-custom menu-item-object-custom menu-item-home menu-item-1663" name="tags">
+                    <a class="" href="/tags">
+                      标签 
+                    </a> 
+                  </li>
+                
+                  <li class="menu-item menu-item-type-custom menu-item-object-custom menu-item-home menu-item-1663" name="about">
+                    <a class="" href="/about">
+                      关于 
+                    </a> 
+                  </li>
+                
+              </ul>
+            </div>
+          </nav>
+
+      </div>
+  </div>
+</header>
+
+
+  <div id="container">
+    <div id="wrap">
+            
+      <div id="content" class="outer">
+        
+          <section id="main" style="float:none;"><article id="post-leetcode/最大子序和" style="width: 66%; float:left;" class="article article-type-post" itemscope itemprop="blogPost" >
+  <div id="articleInner" class="clearfix post-1016 post type-post status-publish format-standard has-post-thumbnail hentry category-template-2 category-uncategorized tag-codex tag-edge-case tag-featured-image tag-image tag-template">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 class="thumb" class="article-title" itemprop="name">
+      最大子序和
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-meta">
+      
+	<a href="/2021/10/03/leetcode/%E6%9C%80%E5%A4%A7%E5%AD%90%E5%BA%8F%E5%92%8C/" class="article-date">
+	  <time datetime="2021-10-03T06:18:08.960Z" itemprop="datePublished">十月 3, 2021</time>
+	</a>
+
+      
+	<span class="ico-folder"></span>
+    <a class="article-category-link" href="/categories/LeetCode/">LeetCode</a>
+ 
+      
+    </div>
+    <div class="article-entry" itemprop="articleBody">
+      
+        <p>给定一个整数数组 nums ，找到一个具有最大和的连续子数组（子数组最少包含一个元素），返回其最大和。</p>
+<blockquote>
+<p>每个算法，用生活中的例子加以解释，就会记忆深刻，理解透彻了</p>
+</blockquote>
+<a id="more"></a>
+<p>示例</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">输入：nums &#x3D; [-2,1,-3,4,-1,2,1,-5,4]</span><br><span class="line">输出：6</span><br><span class="line">解释：连续子数组 [4,-1,2,1] 的和最大，为 6 。</span><br></pre></td></tr></table></figure>
+<h2 id="答案"><a href="#答案" class="headerlink" title="答案"></a>答案</h2><figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">var</span> maxSubArray = <span class="function"><span class="keyword">function</span>(<span class="params">nums</span>) </span>&#123;</span><br><span class="line">    <span class="keyword">let</span> totalPlus = <span class="number">0</span>, maxPlus = nums[<span class="number">0</span>];</span><br><span class="line">    nums.forEach(<span class="function">(<span class="params">x</span>) =&gt;</span> &#123;</span><br><span class="line">        totalPlus = <span class="built_in">Math</span>.max(totalPlus + x, x);</span><br><span class="line">        maxPlus = <span class="built_in">Math</span>.max(maxPlus, totalPlus);</span><br><span class="line">    &#125;);</span><br><span class="line">    <span class="keyword">return</span> maxPlus;</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+<h2 id="举例说明"><a href="#举例说明" class="headerlink" title="举例说明"></a>举例说明</h2><ol>
+<li>假设现在有一个空的桶，上方加水，底部快慢不一的放水</li>
+<li>加水，可以理解为，将数组的每个数字加入桶里面</li>
+<li>放水，可以理解为，当数字为负数时，开始放出相应的水量</li>
+<li>最后操作结束，可以看到桶内壁处的最高水印位置，即当前出现的最大和</li>
+</ol>
+<p><a target="_blank" rel="noopener" href="https://leetcode-cn.com/problems/maximum-subarray/comments/1114786">https://leetcode-cn.com/problems/maximum-subarray/comments/1114786</a></p>
+<h2 id="动态规划"><a href="#动态规划" class="headerlink" title="动态规划"></a>动态规划</h2><blockquote>
+<p>动规五部曲</p>
+<ol>
+<li>确定dp数组，以及下标的含义<br>dp[i]：包括下标i之前的最⼤连续⼦序列和为dp[i]。</li>
+<li>确定递归公式<br>dp[i]只有两个⽅向可以推出来：</li>
+</ol>
+<ul>
+<li>dp[i - 1] + nums[i]，即：nums[i]加⼊当前连续⼦序列和</li>
+<li>nums[i]，即：从头开始计算当前连续⼦序列和<br>⼀定是取最⼤的，所以dp[i] = max(dp[i - 1] + nums[i], nums[i]);</li>
+</ul>
+<ol>
+<li>dp数组如何初始化<br>从递推公式可以看出来dp[i]是依赖于dp[i - 1]的状态，dp[0]就是递推公式的基础。<br>即dp[0] = nums[0]</li>
+<li>确定遍历顺序递推公式中dp[i]依赖于dp[i - 1]的状态，需要从前向后遍历。</li>
+<li>举例推导dp数组<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 输⼊：nums = [-2,1,-3,4,-1,2,1,-5,4]，对应的dp状态如下：</span></span><br><span class="line"><span class="comment">// dp[i] = max(dp[i - 1] + nums[i], nums[i]);</span></span><br><span class="line">dp[<span class="number">0</span>] = <span class="number">-2</span>   max(<span class="number">-2</span>)  </span><br><span class="line">dp[<span class="number">1</span>] = <span class="number">1</span>    max(<span class="number">-1</span>,<span class="number">1</span>)</span><br><span class="line">dp[<span class="number">2</span>] = <span class="number">-2</span>   max(<span class="number">-2</span>,<span class="number">-3</span>)</span><br><span class="line">dp[<span class="number">3</span>] = <span class="number">4</span>    max(<span class="number">2</span>,<span class="number">4</span>)</span><br><span class="line">dp[<span class="number">4</span>] = <span class="number">3</span>    max(<span class="number">3</span>,<span class="number">-1</span>)</span><br><span class="line">dp[<span class="number">5</span>] = <span class="number">5</span>    max(<span class="number">5</span>,<span class="number">2</span>)</span><br><span class="line">dp[<span class="number">6</span>] = <span class="number">6</span>    max(<span class="number">6</span>,<span class="number">1</span>)</span><br><span class="line">dp[<span class="number">7</span>] = <span class="number">1</span>    max(<span class="number">1</span>,<span class="number">-5</span>)</span><br><span class="line">dp[<span class="number">8</span>] = <span class="number">5</span>    max(<span class="number">5</span>,<span class="number">4</span>)</span><br></pre></td></tr></table></figure>
+那么我们要找最⼤的连续⼦序列，就应该找每⼀个i为终点的连续最⼤⼦序列。所以在递推公式的时候，可以直接选出最⼤的dp[i]。</li>
+</ol>
+</blockquote>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">var</span> maxSubArray = <span class="function"><span class="keyword">function</span>(<span class="params">nums</span>) </span>&#123;</span><br><span class="line">    <span class="comment">// dp[i] = max&#123;dp[i-1]+v, v&#125;</span></span><br><span class="line">    <span class="keyword">const</span> dp = [];</span><br><span class="line">    dp[<span class="number">0</span>] = arr[<span class="number">0</span>];</span><br><span class="line">    <span class="keyword">let</span> max = dp[<span class="number">0</span>];</span><br><span class="line">    <span class="keyword">for</span> (<span class="keyword">let</span> i = <span class="number">1</span>; i &lt; arr.length; i++) &#123;</span><br><span class="line">        dp[i] = <span class="built_in">Math</span>.max(dp[i - <span class="number">1</span>] + arr[i], arr[i]);</span><br><span class="line">        max = <span class="built_in">Math</span>.max(max, dp[i]);</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> max;</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+
+      
+    </div>
+    <footer class="entry-meta entry-footer">
+      
+	<span class="ico-folder"></span>
+    <a class="article-category-link" href="/categories/LeetCode/">LeetCode</a>
+
+      
+  <span class="ico-tags"></span>
+  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/%E7%AE%97%E6%B3%95/" rel="tag">算法</a></li></ul>
+
+      
+        
+	<div id="comment">
+		<!-- 来必力City版安装代码 -->
+		<div id="lv-container" data-id="city" data-uid="MTAyMC8yOTQ4MS82MDQ5">
+		<script type="text/javascript">
+		   (function(d, s) {
+		       var j, e = d.getElementsByTagName(s)[0];
+
+		       if (typeof LivereTower === 'function') { return; }
+
+		       j = d.createElement(s);
+		       j.src = 'https://cdn-city.livere.com/js/embed.dist.js';
+		       j.async = true;
+
+		       e.parentNode.insertBefore(j, e);
+		   })(document, 'script');
+		</script>
+		<noscript>为正常使用来必力评论功能请激活JavaScript</noscript>
+		</div>
+		<!-- City版安装代码已完成 -->
+	</div>
+
+
+
+      
+    </footer>
+    <hr class="entry-footer-hr">
+  </div>
+  
+    
+<nav id="article-nav">
+  
+    <a href="/2021/11/08/leetcode/%E5%85%A8%E6%8E%92%E5%88%97/" id="article-nav-newer" class="article-nav-link-wrap">
+      <strong class="article-nav-caption">上一篇</strong>
+      <div class="article-nav-title">
+        
+          全排列
+        
+      </div>
+    </a>
+  
+  
+    <a href="/2021/09/15/front/monaco/" id="article-nav-older" class="article-nav-link-wrap">
+      <strong class="article-nav-caption">下一篇</strong>
+      <div class="article-nav-title">monaco-editor</div>
+    </a>
+  
+</nav>
+
+  
+</article>
+
+<!-- Table of Contents -->
+
+  <aside id="sidebar">
+    <div id="toc" class="toc-article">
+    <strong class="toc-title">文章目录</strong>
+    
+      <ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E7%AD%94%E6%A1%88"><span class="nav-number">1.</span> <span class="nav-text">答案</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%B8%BE%E4%BE%8B%E8%AF%B4%E6%98%8E"><span class="nav-number">2.</span> <span class="nav-text">举例说明</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%8A%A8%E6%80%81%E8%A7%84%E5%88%92"><span class="nav-number">3.</span> <span class="nav-text">动态规划</span></a></li></ol>
+    
+    </div>
+  </aside>
+</section>
+        
+      </div>
+
+    </div>
+    <!-- <nav id="mobile-nav">
+  
+    <a href="/" class="mobile-nav-link">Home</a>
+  
+    <a href="/archives" class="mobile-nav-link">Archives</a>
+  
+    <a href="/categories" class="mobile-nav-link">Categories</a>
+  
+    <a href="/tags" class="mobile-nav-link">Tags</a>
+  
+    <a href="/about" class="mobile-nav-link">About</a>
+  
+</nav> -->
+    <footer id="footer" class="site-footer">
+  
+
+  <div class="clearfix container">
+      <div class="site-info">
+	      &copy; 2023 Topthinking All Rights Reserved.
+        <script async src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+        <span id="busuanzi_container_site_pv">本站总访问量<span id="busuanzi_value_site_pv"></span>次</span>
+        <span id="busuanzi_container_site_uv">本站访客数<span id="busuanzi_value_site_uv"></span>人次</span>
+        
+      </div>
+  </div>
+</footer>
+
+
+<!-- min height -->
+
+<script>
+    var wrapdiv = document.getElementById("wrap");
+    var contentdiv = document.getElementById("content");
+
+    wrapdiv.style.minHeight = document.body.offsetHeight - document.getElementById("allheader").offsetHeight - document.getElementById("footer").offsetHeight + "px";
+    contentdiv.style.minHeight = document.body.offsetHeight - document.getElementById("allheader").offsetHeight - document.getElementById("footer").offsetHeight + "px";
+
+
+    <!-- headerblur min height -->
+    
+      var headerblur = document.getElementById("header-blur");
+      if(headerblur){
+        headerblur.style.minHeight = window.getComputedStyle(document.getElementById("allheader"), null).height;
+      }
+    
+    
+</script>
+    
+<div style="display: none;">
+  <script src="https://s11.cnzz.com/z_stat.php?id=1260716016&web_id=1260716016" language="JavaScript"></script>
+</div>
+
+<!-- mathjax config similar to math.stackexchange -->
+
+<script type="text/x-mathjax-config">
+  MathJax.Hub.Config({
+    tex2jax: {
+      inlineMath: [ ['$','$'], ["\\(","\\)"] ],
+      processEscapes: true
+    }
+  });
+</script>
+
+<script type="text/x-mathjax-config">
+    MathJax.Hub.Config({
+      tex2jax: {
+        skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+      }
+    });
+</script>
+
+<script type="text/x-mathjax-config">
+    MathJax.Hub.Queue(function() {
+        var all = MathJax.Hub.getAllJax(), i;
+        for(i=0; i < all.length; i += 1) {
+            all[i].SourceElement().parentNode.className += ' has-jax';
+        }
+    });
+</script>
+
+<script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML">
+</script>
+
+
+
+<link rel="stylesheet" href="/fancybox/jquery.fancybox.css">
+
+
+<script src="/fancybox/jquery.fancybox.pack.js"></script>
+
+
+
+
+<script src="/js/script.js"></script>
+
+
+<script src="/js/bootstrap.js"></script>
+
+
+<script src="/js/main.js"></script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  </div>
+
+  <a id="rocket" href="#top" class=""></a>
+  <script type="text/javascript" src="/js/totop.js" async=""></script>
+</body>
+</html>

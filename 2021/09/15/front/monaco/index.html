@@ -1,0 +1,411 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <meta charset="utf-8">
+  
+  <title>monaco-editor | Topthinking</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+  
+  
+  
+  
+  <meta name="description" content="关于编辑器的使用，网上一搜一大堆，这里不再赘述 这里主要介绍编辑器使用时，遇到的关键问题和痛点  语法解释器需要使用webpack插件monaco-editor-webpack-plugin全局注册window.MonacoEnvironment对象，供monaco编辑器内核调度根据当前编辑器的语言模式，读取对应的语法解释器worker 123456789101112131415161718co">
+<meta property="og:type" content="article">
+<meta property="og:title" content="monaco-editor">
+<meta property="og:url" content="https://topthinking.gitee.io/2021/09/15/front/monaco/index.html">
+<meta property="og:site_name" content="Topthinking">
+<meta property="og:description" content="关于编辑器的使用，网上一搜一大堆，这里不再赘述 这里主要介绍编辑器使用时，遇到的关键问题和痛点  语法解释器需要使用webpack插件monaco-editor-webpack-plugin全局注册window.MonacoEnvironment对象，供monaco编辑器内核调度根据当前编辑器的语言模式，读取对应的语法解释器worker 123456789101112131415161718co">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2021-09-15T13:15:12.946Z">
+<meta property="article:modified_time" content="2021-09-15T14:40:17.842Z">
+<meta property="article:author" content="topthinking">
+<meta name="twitter:card" content="summary">
+  
+  <link rel="alternate" href="/atom.xml" title="Topthinking" type="application/atom+xml">
+  
+  <link rel="icon" href="/css/images/favicon.png">
+  
+  <link href="//fonts.googleapis.com/css?family=Source+Code+Pro" rel="stylesheet" type="text/css">
+  
+  <link href="https://fonts.googleapis.com/css?family=Open+Sans|Montserrat:700" rel="stylesheet" type="text/css">
+  <link href="https://fonts.googleapis.com/css?family=Roboto:400,300,300italic,400italic" rel="stylesheet" type="text/css">
+  <link href="//cdn.bootcss.com/font-awesome/4.6.3/css/font-awesome.min.css" rel="stylesheet">
+  <style type="text/css">
+    @font-face {
+      font-family: futura-pt;
+      src: url(https://use.typekit.net/af/9749f0/00000000000000000001008f/27/l?subset_id=2&fvd=n5) format("woff2");
+      font-weight: 500;
+      font-style: normal;
+    }
+
+    @font-face {
+      font-family: futura-pt;
+      src: url(https://use.typekit.net/af/90cf9f/000000000000000000010091/27/l?subset_id=2&fvd=n7) format("woff2");
+      font-weight: 500;
+      font-style: normal;
+    }
+
+    @font-face {
+      font-family: futura-pt;
+      src: url(https://use.typekit.net/af/8a5494/000000000000000000013365/27/l?subset_id=2&fvd=n4) format("woff2");
+      font-weight: lighter;
+      font-style: normal;
+    }
+
+    @font-face {
+      font-family: futura-pt;
+      src: url(https://use.typekit.net/af/d337d8/000000000000000000010095/27/l?subset_id=2&fvd=i4) format("woff2");
+      font-weight: 400;
+      font-style: italic;
+    }
+  </style>
+
+  <link rel="stylesheet" id="athemes-headings-fonts-css" href="//fonts.googleapis.com/css?family=Yanone+Kaffeesatz%3A200%2C300%2C400%2C700&amp;ver=4.6.1" type="text/css" media="all">
+
+  <link rel="stylesheet" id="athemes-headings-fonts-css" href="//fonts.googleapis.com/css?family=Oswald%3A300%2C400%2C700&amp;ver=4.6.1" type="text/css" media="all">
+  
+<link rel="stylesheet" href="/css/style.css">
+
+
+  
+<script src="/js/jquery-3.1.1.min.js"></script>
+
+
+  <!-- Bootstrap core CSS -->
+  <link rel="stylesheet" href="/css/bootstrap.css">
+  <link rel="stylesheet" href="/css/fashion.css">
+  <link rel="stylesheet" href="/css/glyphs.css">
+
+<meta name="generator" content="Hexo 5.0.2"></head>
+
+
+  <body data-spy="scroll" data-target="#toc" data-offset="50">
+
+
+  
+<!--  
+  <div class="site-header-image">
+    <img id="originBg" width="100%" alt="Hike News" src="">
+  </div>
+
+  <div id="header-blur" class="site-header-image blur" style="position: absolute; top:0; height: 207px; min-height: 207px; min-width: 100%;">
+    <img id="blurBg" width="100%" style="top: 96%" alt="Hike News" src="">
+  </div>
+
+  <script>
+        var imgUrls = "css/images/pose01.jpg,https://source.unsplash.com/collection/954550/1920x1080,https://source.unsplash.com/collection/954550/1920x1081".split(",");
+        var random = Math.floor((Math.random() * imgUrls.length ));
+        if (imgUrls[random].startsWith('http') || imgUrls[random].indexOf('://') >= 0) {
+          document.getElementById("originBg").src=imgUrls[random];
+          document.getElementById("blurBg").src=imgUrls[random];
+        } else {
+          document.getElementById("originBg").src='/' + imgUrls[random];
+          document.getElementById("blurBg").src='/' + imgUrls[random];
+        }
+    </script>
+-->
+
+
+
+<header id="allheader" class="site-header" role="banner">
+  <div class="clearfix container">
+      <div class="site-branding">
+
+          <h1 class="site-title">
+            
+              <a href="/" title="Topthinking" rel="home"> Topthinking </a>
+            
+          </h1>
+          
+          
+            <div class="site-description">你也许什么都没有错，只是老了<br/>愿你历尽千帆，归来仍是少年</div>
+          
+            
+          <nav id="main-navigation" class="main-navigation" role="navigation">
+            <a class="nav-open">Menu</a>
+            <a class="nav-close">Close</a>
+
+            <div class="clearfix sf-menu">
+              <ul id="main-nav" class="menu sf-js-enabled sf-arrows"  style="touch-action: pan-y;">
+                
+                  <li class="menu-item menu-item-type-custom menu-item-object-custom menu-item-home menu-item-1663" name="home">
+                    <a class="" href="/">
+                      首页 
+                    </a> 
+                  </li>
+                
+                  <li class="menu-item menu-item-type-custom menu-item-object-custom menu-item-home menu-item-1663" name="archives">
+                    <a class="" href="/archives">
+                      归档 
+                    </a> 
+                  </li>
+                
+                  <li class="menu-item menu-item-type-custom menu-item-object-custom menu-item-home menu-item-1663" name="categories">
+                    <a class="" href="/categories">
+                      分类 
+                    </a> 
+                  </li>
+                
+                  <li class="menu-item menu-item-type-custom menu-item-object-custom menu-item-home menu-item-1663" name="tags">
+                    <a class="" href="/tags">
+                      标签 
+                    </a> 
+                  </li>
+                
+                  <li class="menu-item menu-item-type-custom menu-item-object-custom menu-item-home menu-item-1663" name="about">
+                    <a class="" href="/about">
+                      关于 
+                    </a> 
+                  </li>
+                
+              </ul>
+            </div>
+          </nav>
+
+      </div>
+  </div>
+</header>
+
+
+  <div id="container">
+    <div id="wrap">
+            
+      <div id="content" class="outer">
+        
+          <section id="main" style="float:none;"><article id="post-front/monaco" style="width: 66%; float:left;" class="article article-type-post" itemscope itemprop="blogPost" >
+  <div id="articleInner" class="clearfix post-1016 post type-post status-publish format-standard has-post-thumbnail hentry category-template-2 category-uncategorized tag-codex tag-edge-case tag-featured-image tag-image tag-template">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 class="thumb" class="article-title" itemprop="name">
+      monaco-editor
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-meta">
+      
+	<a href="/2021/09/15/front/monaco/" class="article-date">
+	  <time datetime="2021-09-15T13:15:12.946Z" itemprop="datePublished">九月 15, 2021</time>
+	</a>
+
+      
+	<span class="ico-folder"></span>
+    <a class="article-category-link" href="/categories/%E5%A4%A7%E5%89%8D%E7%AB%AF/">大前端</a>
+ 
+      
+    </div>
+    <div class="article-entry" itemprop="articleBody">
+      
+        <blockquote>
+<p>关于编辑器的使用，网上一搜一大堆，这里不再赘述</p>
+<p>这里主要介绍编辑器使用时，遇到的关键问题和痛点</p>
+</blockquote>
+<h2 id="语法解释器"><a href="#语法解释器" class="headerlink" title="语法解释器"></a>语法解释器</h2><p>需要使用<code>webpack</code>插件<strong>monaco-editor-webpack-plugin</strong><br>全局注册<code>window.MonacoEnvironment</code>对象，供<code>monaco</code>编辑器内核调度<br>根据当前编辑器的语言模式，读取对应的语法解释器worker</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">const</span> MonacoWebpackPlugin = <span class="built_in">require</span>(<span class="string">&#x27;monaco-editor-webpack-plugin&#x27;</span>);</span><br><span class="line"><span class="keyword">new</span> MonacoWebpackPlugin(&#123;</span><br><span class="line">    <span class="comment">// 指定编辑器默认加载的语言</span></span><br><span class="line">    languages: [<span class="string">&#x27;json&#x27;</span>, <span class="string">&#x27;javascript&#x27;</span>, <span class="string">&#x27;typescript&#x27;</span>, <span class="string">&#x27;yaml&#x27;</span>],</span><br><span class="line">    <span class="comment">// 自定义语言解释器worker</span></span><br><span class="line">    customLanguages: [</span><br><span class="line">        &#123;</span><br><span class="line">            label: <span class="string">&#x27;yaml&#x27;</span>,</span><br><span class="line">            <span class="comment">// <span class="doctag">TODO:</span> restore once https://github.com/pengx17/monaco-yaml/pull/48 is merged</span></span><br><span class="line">            entry: <span class="string">&#x27;monaco-yaml/lib/esm/monaco.contribution&#x27;</span>,</span><br><span class="line">            worker: &#123;</span><br><span class="line">                id: <span class="string">&#x27;vs/language/yaml/yamlWorker&#x27;</span>,</span><br><span class="line">                <span class="comment">// <span class="doctag">TODO:</span> restore once https://github.com/pengx17/monaco-yaml/pull/48 is merged</span></span><br><span class="line">                entry: <span class="string">&#x27;monaco-yaml/lib/esm/yaml.worker.js&#x27;</span></span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">    ]</span><br><span class="line">&#125;)</span><br></pre></td></tr></table></figure>
+<h2 id="语法提示（低代码编辑使用）"><a href="#语法提示（低代码编辑使用）" class="headerlink" title="语法提示（低代码编辑使用）"></a>语法提示（低代码编辑使用）</h2><p><a target="_blank" rel="noopener" href="https://www.javaroad.cn/questions/17664#">参考</a></p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// validation settings</span></span><br><span class="line">monaco.languages.typescript.javascriptDefaults.setDiagnosticsOptions(&#123;</span><br><span class="line">  noSemanticValidation: <span class="literal">true</span>,</span><br><span class="line">  noSyntaxValidation: <span class="literal">false</span></span><br><span class="line">&#125;);</span><br><span class="line"></span><br><span class="line"><span class="comment">// compiler options</span></span><br><span class="line">monaco.languages.typescript.javascriptDefaults.setCompilerOptions(&#123;</span><br><span class="line">  target: monaco.languages.typescript.ScriptTarget.ES2016,</span><br><span class="line">  allowNonTsExtensions: <span class="literal">true</span>,</span><br><span class="line">  allowJs: <span class="literal">true</span></span><br><span class="line">&#125;);</span><br><span class="line"></span><br><span class="line"><span class="comment">// extra libraries</span></span><br><span class="line">monaco.languages.typescript.javascriptDefaults.addExtraLib(<span class="string">`</span></span><br><span class="line"><span class="string">declare class getValue &#123;</span></span><br><span class="line"><span class="string">    /**</span></span><br><span class="line"><span class="string">    * 这是什么</span></span><br><span class="line"><span class="string">    */</span></span><br><span class="line"><span class="string">    antd: &#123;</span></span><br><span class="line"><span class="string">        message:&#123;</span></span><br><span class="line"><span class="string">            success:()=&gt;void;</span></span><br><span class="line"><span class="string">        &#125;</span></span><br><span class="line"><span class="string">    &#125;,</span></span><br><span class="line"><span class="string">&#125;</span></span><br><span class="line"><span class="string">`</span>,</span><br><span class="line">  <span class="string">&#x27;filename/facts.d.ts&#x27;</span></span><br><span class="line">);</span><br></pre></td></tr></table></figure>
+<blockquote>
+<p>代码编辑时，需要加上这个注释</p>
+</blockquote>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * <span class="doctag">@param <span class="type">&#123;getValue&#125;</span> <span class="variable">event</span></span></span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">getValue</span>(<span class="params">event</span>) </span>&#123;</span><br><span class="line">    event.antd.message</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+      
+    </div>
+    <footer class="entry-meta entry-footer">
+      
+	<span class="ico-folder"></span>
+    <a class="article-category-link" href="/categories/%E5%A4%A7%E5%89%8D%E7%AB%AF/">大前端</a>
+
+      
+      
+        
+	<div id="comment">
+		<!-- 来必力City版安装代码 -->
+		<div id="lv-container" data-id="city" data-uid="MTAyMC8yOTQ4MS82MDQ5">
+		<script type="text/javascript">
+		   (function(d, s) {
+		       var j, e = d.getElementsByTagName(s)[0];
+
+		       if (typeof LivereTower === 'function') { return; }
+
+		       j = d.createElement(s);
+		       j.src = 'https://cdn-city.livere.com/js/embed.dist.js';
+		       j.async = true;
+
+		       e.parentNode.insertBefore(j, e);
+		   })(document, 'script');
+		</script>
+		<noscript>为正常使用来必力评论功能请激活JavaScript</noscript>
+		</div>
+		<!-- City版安装代码已完成 -->
+	</div>
+
+
+
+      
+    </footer>
+    <hr class="entry-footer-hr">
+  </div>
+  
+    
+<nav id="article-nav">
+  
+    <a href="/2021/10/03/leetcode/%E6%9C%80%E5%A4%A7%E5%AD%90%E5%BA%8F%E5%92%8C/" id="article-nav-newer" class="article-nav-link-wrap">
+      <strong class="article-nav-caption">上一篇</strong>
+      <div class="article-nav-title">
+        
+          最大子序和
+        
+      </div>
+    </a>
+  
+  
+    <a href="/2021/09/08/front/%E8%99%9A%E6%8B%9Fdom/" id="article-nav-older" class="article-nav-link-wrap">
+      <strong class="article-nav-caption">下一篇</strong>
+      <div class="article-nav-title">虚拟dom和dom diff</div>
+    </a>
+  
+</nav>
+
+  
+</article>
+
+<!-- Table of Contents -->
+
+  <aside id="sidebar">
+    <div id="toc" class="toc-article">
+    <strong class="toc-title">文章目录</strong>
+    
+      <ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E8%AF%AD%E6%B3%95%E8%A7%A3%E9%87%8A%E5%99%A8"><span class="nav-number">1.</span> <span class="nav-text">语法解释器</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E8%AF%AD%E6%B3%95%E6%8F%90%E7%A4%BA%EF%BC%88%E4%BD%8E%E4%BB%A3%E7%A0%81%E7%BC%96%E8%BE%91%E4%BD%BF%E7%94%A8%EF%BC%89"><span class="nav-number">2.</span> <span class="nav-text">语法提示（低代码编辑使用）</span></a></li></ol>
+    
+    </div>
+  </aside>
+</section>
+        
+      </div>
+
+    </div>
+    <!-- <nav id="mobile-nav">
+  
+    <a href="/" class="mobile-nav-link">Home</a>
+  
+    <a href="/archives" class="mobile-nav-link">Archives</a>
+  
+    <a href="/categories" class="mobile-nav-link">Categories</a>
+  
+    <a href="/tags" class="mobile-nav-link">Tags</a>
+  
+    <a href="/about" class="mobile-nav-link">About</a>
+  
+</nav> -->
+    <footer id="footer" class="site-footer">
+  
+
+  <div class="clearfix container">
+      <div class="site-info">
+	      &copy; 2023 Topthinking All Rights Reserved.
+        <script async src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+        <span id="busuanzi_container_site_pv">本站总访问量<span id="busuanzi_value_site_pv"></span>次</span>
+        <span id="busuanzi_container_site_uv">本站访客数<span id="busuanzi_value_site_uv"></span>人次</span>
+        
+      </div>
+  </div>
+</footer>
+
+
+<!-- min height -->
+
+<script>
+    var wrapdiv = document.getElementById("wrap");
+    var contentdiv = document.getElementById("content");
+
+    wrapdiv.style.minHeight = document.body.offsetHeight - document.getElementById("allheader").offsetHeight - document.getElementById("footer").offsetHeight + "px";
+    contentdiv.style.minHeight = document.body.offsetHeight - document.getElementById("allheader").offsetHeight - document.getElementById("footer").offsetHeight + "px";
+
+
+    <!-- headerblur min height -->
+    
+      var headerblur = document.getElementById("header-blur");
+      if(headerblur){
+        headerblur.style.minHeight = window.getComputedStyle(document.getElementById("allheader"), null).height;
+      }
+    
+    
+</script>
+    
+<div style="display: none;">
+  <script src="https://s11.cnzz.com/z_stat.php?id=1260716016&web_id=1260716016" language="JavaScript"></script>
+</div>
+
+<!-- mathjax config similar to math.stackexchange -->
+
+<script type="text/x-mathjax-config">
+  MathJax.Hub.Config({
+    tex2jax: {
+      inlineMath: [ ['$','$'], ["\\(","\\)"] ],
+      processEscapes: true
+    }
+  });
+</script>
+
+<script type="text/x-mathjax-config">
+    MathJax.Hub.Config({
+      tex2jax: {
+        skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+      }
+    });
+</script>
+
+<script type="text/x-mathjax-config">
+    MathJax.Hub.Queue(function() {
+        var all = MathJax.Hub.getAllJax(), i;
+        for(i=0; i < all.length; i += 1) {
+            all[i].SourceElement().parentNode.className += ' has-jax';
+        }
+    });
+</script>
+
+<script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML">
+</script>
+
+
+
+<link rel="stylesheet" href="/fancybox/jquery.fancybox.css">
+
+
+<script src="/fancybox/jquery.fancybox.pack.js"></script>
+
+
+
+
+<script src="/js/script.js"></script>
+
+
+<script src="/js/bootstrap.js"></script>
+
+
+<script src="/js/main.js"></script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  </div>
+
+  <a id="rocket" href="#top" class=""></a>
+  <script type="text/javascript" src="/js/totop.js" async=""></script>
+</body>
+</html>
