@@ -1,0 +1,438 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <meta charset="utf-8">
+  
+  <title>全排列 | Topthinking</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+  
+  <meta name="keywords" content="算法" />
+  
+  
+  
+  
+  <meta name="description" content="输入一个长度为n的字符串，输出该字符串中字符的全排列 解法一 使用递归，但是这样会出现重复的，需要做去重处理  123456789101112131415161718192021222324252627282930313233const permutation &#x3D; (str) &#x3D;&gt; &amp;#123;  const result &#x3D; [];  &#x2F;&#x2F; 用来交换数组的两个位置上的值  const sw">
+<meta property="og:type" content="article">
+<meta property="og:title" content="全排列">
+<meta property="og:url" content="https://topthinking.gitee.io/2022/05/13/leetcode/%E5%85%A8%E6%8E%92%E5%88%97/index.html">
+<meta property="og:site_name" content="Topthinking">
+<meta property="og:description" content="输入一个长度为n的字符串，输出该字符串中字符的全排列 解法一 使用递归，但是这样会出现重复的，需要做去重处理  123456789101112131415161718192021222324252627282930313233const permutation &#x3D; (str) &#x3D;&gt; &amp;#123;  const result &#x3D; [];  &#x2F;&#x2F; 用来交换数组的两个位置上的值  const sw">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2022-05-13T07:07:18.471Z">
+<meta property="article:modified_time" content="2022-05-13T07:07:18.471Z">
+<meta property="article:author" content="topthinking">
+<meta property="article:tag" content="算法">
+<meta name="twitter:card" content="summary">
+  
+  <link rel="alternate" href="/atom.xml" title="Topthinking" type="application/atom+xml">
+  
+  <link rel="icon" href="/css/images/favicon.png">
+  
+  <link href="//fonts.googleapis.com/css?family=Source+Code+Pro" rel="stylesheet" type="text/css">
+  
+  <link href="https://fonts.googleapis.com/css?family=Open+Sans|Montserrat:700" rel="stylesheet" type="text/css">
+  <link href="https://fonts.googleapis.com/css?family=Roboto:400,300,300italic,400italic" rel="stylesheet" type="text/css">
+  <link href="//cdn.bootcss.com/font-awesome/4.6.3/css/font-awesome.min.css" rel="stylesheet">
+  <style type="text/css">
+    @font-face {
+      font-family: futura-pt;
+      src: url(https://use.typekit.net/af/9749f0/00000000000000000001008f/27/l?subset_id=2&fvd=n5) format("woff2");
+      font-weight: 500;
+      font-style: normal;
+    }
+
+    @font-face {
+      font-family: futura-pt;
+      src: url(https://use.typekit.net/af/90cf9f/000000000000000000010091/27/l?subset_id=2&fvd=n7) format("woff2");
+      font-weight: 500;
+      font-style: normal;
+    }
+
+    @font-face {
+      font-family: futura-pt;
+      src: url(https://use.typekit.net/af/8a5494/000000000000000000013365/27/l?subset_id=2&fvd=n4) format("woff2");
+      font-weight: lighter;
+      font-style: normal;
+    }
+
+    @font-face {
+      font-family: futura-pt;
+      src: url(https://use.typekit.net/af/d337d8/000000000000000000010095/27/l?subset_id=2&fvd=i4) format("woff2");
+      font-weight: 400;
+      font-style: italic;
+    }
+  </style>
+
+  <link rel="stylesheet" id="athemes-headings-fonts-css" href="//fonts.googleapis.com/css?family=Yanone+Kaffeesatz%3A200%2C300%2C400%2C700&amp;ver=4.6.1" type="text/css" media="all">
+
+  <link rel="stylesheet" id="athemes-headings-fonts-css" href="//fonts.googleapis.com/css?family=Oswald%3A300%2C400%2C700&amp;ver=4.6.1" type="text/css" media="all">
+  
+<link rel="stylesheet" href="/css/style.css">
+
+
+  
+<script src="/js/jquery-3.1.1.min.js"></script>
+
+
+  <!-- Bootstrap core CSS -->
+  <link rel="stylesheet" href="/css/bootstrap.css">
+  <link rel="stylesheet" href="/css/fashion.css">
+  <link rel="stylesheet" href="/css/glyphs.css">
+
+<meta name="generator" content="Hexo 5.0.2"></head>
+
+
+  <body data-spy="scroll" data-target="#toc" data-offset="50">
+
+
+  
+<!--  
+  <div class="site-header-image">
+    <img id="originBg" width="100%" alt="Hike News" src="">
+  </div>
+
+  <div id="header-blur" class="site-header-image blur" style="position: absolute; top:0; height: 207px; min-height: 207px; min-width: 100%;">
+    <img id="blurBg" width="100%" style="top: 96%" alt="Hike News" src="">
+  </div>
+
+  <script>
+        var imgUrls = "css/images/pose01.jpg,https://source.unsplash.com/collection/954550/1920x1080,https://source.unsplash.com/collection/954550/1920x1081".split(",");
+        var random = Math.floor((Math.random() * imgUrls.length ));
+        if (imgUrls[random].startsWith('http') || imgUrls[random].indexOf('://') >= 0) {
+          document.getElementById("originBg").src=imgUrls[random];
+          document.getElementById("blurBg").src=imgUrls[random];
+        } else {
+          document.getElementById("originBg").src='/' + imgUrls[random];
+          document.getElementById("blurBg").src='/' + imgUrls[random];
+        }
+    </script>
+-->
+
+
+
+<header id="allheader" class="site-header" role="banner">
+  <div class="clearfix container">
+      <div class="site-branding">
+
+          <h1 class="site-title">
+            
+              <a href="/" title="Topthinking" rel="home"> Topthinking </a>
+            
+          </h1>
+          
+          
+            <div class="site-description">你也许什么都没有错，只是老了<br/>愿你历尽千帆，归来仍是少年</div>
+          
+            
+          <nav id="main-navigation" class="main-navigation" role="navigation">
+            <a class="nav-open">Menu</a>
+            <a class="nav-close">Close</a>
+
+            <div class="clearfix sf-menu">
+              <ul id="main-nav" class="menu sf-js-enabled sf-arrows"  style="touch-action: pan-y;">
+                
+                  <li class="menu-item menu-item-type-custom menu-item-object-custom menu-item-home menu-item-1663" name="home">
+                    <a class="" href="/">
+                      首页 
+                    </a> 
+                  </li>
+                
+                  <li class="menu-item menu-item-type-custom menu-item-object-custom menu-item-home menu-item-1663" name="archives">
+                    <a class="" href="/archives">
+                      归档 
+                    </a> 
+                  </li>
+                
+                  <li class="menu-item menu-item-type-custom menu-item-object-custom menu-item-home menu-item-1663" name="categories">
+                    <a class="" href="/categories">
+                      分类 
+                    </a> 
+                  </li>
+                
+                  <li class="menu-item menu-item-type-custom menu-item-object-custom menu-item-home menu-item-1663" name="tags">
+                    <a class="" href="/tags">
+                      标签 
+                    </a> 
+                  </li>
+                
+                  <li class="menu-item menu-item-type-custom menu-item-object-custom menu-item-home menu-item-1663" name="about">
+                    <a class="" href="/about">
+                      关于 
+                    </a> 
+                  </li>
+                
+              </ul>
+            </div>
+          </nav>
+
+      </div>
+  </div>
+</header>
+
+
+  <div id="container">
+    <div id="wrap">
+            
+      <div id="content" class="outer">
+        
+          <section id="main" style="float:none;"><article id="post-leetcode/全排列" style="width: 66%; float:left;" class="article article-type-post" itemscope itemprop="blogPost" >
+  <div id="articleInner" class="clearfix post-1016 post type-post status-publish format-standard has-post-thumbnail hentry category-template-2 category-uncategorized tag-codex tag-edge-case tag-featured-image tag-image tag-template">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 class="thumb" class="article-title" itemprop="name">
+      全排列
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-meta">
+      
+	<a href="/2022/05/13/leetcode/%E5%85%A8%E6%8E%92%E5%88%97/" class="article-date">
+	  <time datetime="2022-05-13T07:07:18.471Z" itemprop="datePublished">五月 13, 2022</time>
+	</a>
+
+      
+	<span class="ico-folder"></span>
+    <a class="article-category-link" href="/categories/LeetCode/">LeetCode</a>
+ 
+      
+    </div>
+    <div class="article-entry" itemprop="articleBody">
+      
+        <p>输入一个长度为n的字符串，输出该字符串中字符的全排列</p>
+<h2 id="解法一"><a href="#解法一" class="headerlink" title="解法一"></a>解法一</h2><blockquote>
+<p>使用递归，但是这样会出现重复的，需要做去重处理</p>
+</blockquote>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">const</span> permutation = <span class="function">(<span class="params">str</span>) =&gt;</span> &#123;</span><br><span class="line">  <span class="keyword">const</span> result = [];</span><br><span class="line"></span><br><span class="line">  <span class="comment">// 用来交换数组的两个位置上的值</span></span><br><span class="line">  <span class="keyword">const</span> swap = <span class="function">(<span class="params">arr, start, end</span>) =&gt;</span> &#123;</span><br><span class="line">    <span class="keyword">const</span> tmp = arr[start];</span><br><span class="line">    arr[start] = arr[end];</span><br><span class="line">    arr[end] = tmp;</span><br><span class="line">    <span class="keyword">return</span> arr;</span><br><span class="line">  &#125;;</span><br><span class="line"></span><br><span class="line">  <span class="comment">// 开始执行递归逻辑</span></span><br><span class="line">  <span class="comment">// arr是当前传入的字符串数组</span></span><br><span class="line">  <span class="comment">// begin是当前开始处理的位置，开始为0</span></span><br><span class="line">  <span class="keyword">const</span> run = <span class="function">(<span class="params">arr, begin</span>) =&gt;</span> &#123;</span><br><span class="line">    <span class="keyword">if</span> (begin === arr.length) &#123;</span><br><span class="line">      <span class="comment">// 当begin累加到当前最大值时，将其输出</span></span><br><span class="line">      res.push(arr.join(<span class="string">&#x27;&#x27;</span>));</span><br><span class="line">    &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">      <span class="keyword">for</span> (<span class="keyword">let</span> i = begin; i &lt; arr.length; i++) &#123;</span><br><span class="line">        swap(arr, i, begin);</span><br><span class="line">        run(arr, begin + <span class="number">1</span>);</span><br><span class="line">        swap(arr, i, begin);</span><br><span class="line">      &#125;</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;;</span><br><span class="line"></span><br><span class="line">  run(str.split(<span class="string">&#x27;&#x27;</span>), <span class="number">0</span>);</span><br><span class="line">  <span class="keyword">return</span> <span class="built_in">Array</span>.from(<span class="keyword">new</span> <span class="built_in">Set</span>(res));</span><br><span class="line">&#125;;</span><br><span class="line"><span class="built_in">console</span>.log(permutation(<span class="string">&#x27;123&#x27;</span>))</span><br><span class="line"><span class="comment">// 输出</span></span><br><span class="line"><span class="comment">// [ &#x27;123&#x27;, &#x27;132&#x27;, &#x27;213&#x27;, &#x27;231&#x27;, &#x27;321&#x27;, &#x27;312&#x27; ]</span></span><br></pre></td></tr></table></figure>
+<p>说明：<br><strong>使用<code>123</code>举列</strong></p>
+<ol>
+<li><p>第一个swap说明，将每一位的值和第一位交换位置<br> 第一层循环会得到这些结果<br> <code>1xx</code>、<code>2xx</code>、<code>3xx</code></p>
+</li>
+<li><p><code>1xx</code>：后，开始执行递归函数<code>run</code>，<br> 这个时候继续走逻辑，begin变为1，递归后循环结果: <code>123</code>，接着继续递归，发现<code>begin === arr.length</code>，这个时候输出<code>123</code>，本次递归结束<br> 回到for循环，这个时候swap，<code>132</code>，继续递归，有发现<code>begin === arr.length</code>，这个时候输出<code>132</code><br> 至此<code>1xx</code>后的for循环和递归结束</p>
+</li>
+<li><p>后续的<code>2xx</code>和<code>3xx</code>，同理上述<code>1xx</code>的描述</p>
+</li>
+</ol>
+<h2 id="解法二"><a href="#解法二" class="headerlink" title="解法二"></a>解法二</h2><blockquote>
+<p>基于上述的解法，如果传入的字符串是<code>abb</code>，则会出现重复的排列值，需要做去重，上述方法，使用了<code>new Set</code>方法对数组做去重，那能否有方法不需要去重就能实现了，同时也不增加额外的空间开销，同时算法的时间复杂度也最小</p>
+<p>不断地计算当前字符串的字典序中下一个更大的排列，直到不存在更大的排列为止即可</p>
+</blockquote>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">const</span> permutation = <span class="function"><span class="keyword">function</span> (<span class="params">s</span>) </span>&#123;</span><br><span class="line">  <span class="keyword">const</span> res = [];</span><br><span class="line"></span><br><span class="line">  <span class="keyword">const</span> arr = <span class="built_in">Array</span>.from(s).sort();</span><br><span class="line"></span><br><span class="line">  res.push(arr.join(<span class="string">&#x27;&#x27;</span>));</span><br><span class="line"></span><br><span class="line">  <span class="keyword">const</span> swap = <span class="function">(<span class="params">arr, i, j</span>) =&gt;</span> &#123;</span><br><span class="line">    <span class="keyword">const</span> temp = arr[i];</span><br><span class="line">    arr[i] = arr[j];</span><br><span class="line">    arr[j] = temp;</span><br><span class="line">  &#125;;</span><br><span class="line"></span><br><span class="line">  <span class="keyword">const</span> reverse = <span class="function">(<span class="params">arr, start</span>) =&gt;</span> &#123;</span><br><span class="line">    <span class="keyword">let</span> left = start,</span><br><span class="line">      right = arr.length - <span class="number">1</span>;</span><br><span class="line">    <span class="keyword">while</span> (left &lt; right) &#123;</span><br><span class="line">      swap(arr, left, right);</span><br><span class="line">      left++;</span><br><span class="line">      right--;</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;;</span><br><span class="line"></span><br><span class="line">  <span class="keyword">const</span> nextPermutation = <span class="function">(<span class="params">arr</span>) =&gt;</span> &#123;</span><br><span class="line">    <span class="keyword">let</span> i = arr.length - <span class="number">2</span>;</span><br><span class="line">    <span class="keyword">while</span> (i &gt;= <span class="number">0</span> &amp;&amp; arr[i] &gt;= arr[i + <span class="number">1</span>]) &#123;</span><br><span class="line">      i--;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">if</span> (i &lt; <span class="number">0</span>) &#123;</span><br><span class="line">      <span class="keyword">return</span> <span class="literal">false</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">let</span> j = arr.length - <span class="number">1</span>;</span><br><span class="line">    <span class="keyword">while</span> (j &gt;= <span class="number">0</span> &amp;&amp; arr[i] &gt;= arr[j]) &#123;</span><br><span class="line">      j--;</span><br><span class="line">    &#125;</span><br><span class="line">    swap(arr, i, j);</span><br><span class="line">    reverse(arr, i + <span class="number">1</span>);</span><br><span class="line">    <span class="keyword">return</span> <span class="literal">true</span>;</span><br><span class="line">  &#125;;</span><br><span class="line"></span><br><span class="line">  <span class="keyword">while</span> (nextPermutation(arr)) &#123;</span><br><span class="line">    res.push(arr.join(<span class="string">&#x27;&#x27;</span>));</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  <span class="keyword">return</span> res;</span><br><span class="line">&#125;;</span><br><span class="line"><span class="built_in">console</span>.log(permutation(<span class="string">&#x27;123&#x27;</span>))</span><br><span class="line"><span class="comment">// 输出</span></span><br><span class="line"><span class="comment">// [ &#x27;123&#x27;, &#x27;132&#x27;, &#x27;213&#x27;, &#x27;231&#x27;, &#x27;312&#x27;, &#x27;321&#x27; ]</span></span><br></pre></td></tr></table></figure>
+<h2 id="解法三"><a href="#解法三" class="headerlink" title="解法三"></a>解法三</h2><blockquote>
+<p>使用深度优先遍历（dfs）</p>
+<p>当然该解法，没有去重，还需要加个去重处理</p>
+</blockquote>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">const</span> permutation = <span class="function">(<span class="params">nums</span>) =&gt;</span> &#123;</span><br><span class="line">  <span class="keyword">const</span> res = [];</span><br><span class="line">  <span class="keyword">const</span> len = nums.length;</span><br><span class="line">  <span class="keyword">if</span> (len === <span class="number">0</span>) &#123;</span><br><span class="line">    <span class="keyword">return</span> res;</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  <span class="keyword">const</span> depth = <span class="number">0</span>;</span><br><span class="line">  <span class="keyword">const</span> path = [];</span><br><span class="line">  <span class="keyword">const</span> used = &#123;&#125;;</span><br><span class="line"></span><br><span class="line">  dfs(nums, len, depth, path, used, res);</span><br><span class="line"></span><br><span class="line">  <span class="keyword">return</span> res;</span><br><span class="line">&#125;;</span><br><span class="line"></span><br><span class="line"><span class="keyword">const</span> dfs = <span class="function">(<span class="params">nums, len, depth, path, used, res</span>) =&gt;</span> &#123;</span><br><span class="line">  <span class="keyword">if</span> (len === depth) &#123;</span><br><span class="line">    res.push([...path]);</span><br><span class="line">    <span class="keyword">return</span>;</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  <span class="keyword">for</span> (<span class="keyword">let</span> i = <span class="number">0</span>; i &lt; len; i++) &#123;</span><br><span class="line">    <span class="keyword">if</span> (used[nums[i]]) &#123;</span><br><span class="line">      <span class="keyword">continue</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    used[nums[i]] = <span class="literal">true</span>;</span><br><span class="line">    path.push(nums[i]);</span><br><span class="line">    dfs(nums, len, depth + <span class="number">1</span>, path, used, res);</span><br><span class="line">    path.pop();</span><br><span class="line">    used[nums[i]] = <span class="literal">false</span>;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;;</span><br><span class="line"></span><br><span class="line"><span class="built_in">console</span>.log(permutation(<span class="string">&#x27;123&#x27;</span>))</span><br></pre></td></tr></table></figure>
+<h2 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h2><p>可以看到输出结果和解法一都不一样</p>
+<p>解法一：<code>[ &#39;123&#39;, &#39;132&#39;, &#39;213&#39;, &#39;231&#39;, &#39;321&#39;, &#39;312&#39; ]</code><br>解法二：<code>[ &#39;123&#39;, &#39;132&#39;, &#39;213&#39;, &#39;231&#39;, &#39;312&#39;, &#39;321&#39; ]</code></p>
+<p>第二种解法是基于字典序的递归查找，这样查找出来的结果，不仅没有重复，而且按字典序进行排序，不需要再进行排序</p>
+<p>第一种解法基于遍历的递归交换查找，必然没有任何顺序，但是同样也能很快的找出所有的结果，但势必会有重复的</p>
+<blockquote>
+<p>耗时测试</p>
+</blockquote>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">const</span> a = <span class="string">&#x27;0123456789&#x27;</span>;</span><br><span class="line"><span class="built_in">console</span>.time();</span><br><span class="line"><span class="built_in">console</span>.log(方案二(a).length);</span><br><span class="line"><span class="built_in">console</span>.timeEnd();</span><br><span class="line"></span><br><span class="line"><span class="built_in">console</span>.time();</span><br><span class="line"><span class="built_in">console</span>.log(方案一(a).length);</span><br><span class="line"><span class="built_in">console</span>.timeEnd();</span><br></pre></td></tr></table></figure>
+<blockquote>
+<p>执行输出</p>
+</blockquote>
+<figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">3628800</span><br><span class="line">default: 1231.317ms</span><br><span class="line">3628800</span><br><span class="line">default: 2406.821ms</span><br></pre></td></tr></table></figure>
+<p>由此可见，方案二比方案一，快了1倍</p>
+
+      
+    </div>
+    <footer class="entry-meta entry-footer">
+      
+	<span class="ico-folder"></span>
+    <a class="article-category-link" href="/categories/LeetCode/">LeetCode</a>
+
+      
+  <span class="ico-tags"></span>
+  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/%E7%AE%97%E6%B3%95/" rel="tag">算法</a></li></ul>
+
+      
+        
+	<div id="comment">
+		<!-- 来必力City版安装代码 -->
+		<div id="lv-container" data-id="city" data-uid="MTAyMC8yOTQ4MS82MDQ5">
+		<script type="text/javascript">
+		   (function(d, s) {
+		       var j, e = d.getElementsByTagName(s)[0];
+
+		       if (typeof LivereTower === 'function') { return; }
+
+		       j = d.createElement(s);
+		       j.src = 'https://cdn-city.livere.com/js/embed.dist.js';
+		       j.async = true;
+
+		       e.parentNode.insertBefore(j, e);
+		   })(document, 'script');
+		</script>
+		<noscript>为正常使用来必力评论功能请激活JavaScript</noscript>
+		</div>
+		<!-- City版安装代码已完成 -->
+	</div>
+
+
+
+      
+    </footer>
+    <hr class="entry-footer-hr">
+  </div>
+  
+    
+<nav id="article-nav">
+  
+    <a href="/2022/05/13/k8s/start/" id="article-nav-newer" class="article-nav-link-wrap">
+      <strong class="article-nav-caption">上一篇</strong>
+      <div class="article-nav-title">
+        
+          部署运行k8s
+        
+      </div>
+    </a>
+  
+  
+    <a href="/2022/05/13/leetcode/%E6%96%B0%E7%88%AC%E6%A5%BC%E6%A2%AF/" id="article-nav-older" class="article-nav-link-wrap">
+      <strong class="article-nav-caption">下一篇</strong>
+      <div class="article-nav-title">新爬楼梯(一步登天)(列出具体爬法)</div>
+    </a>
+  
+</nav>
+
+  
+</article>
+
+<!-- Table of Contents -->
+
+  <aside id="sidebar">
+    <div id="toc" class="toc-article">
+    <strong class="toc-title">文章目录</strong>
+    
+      <ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E8%A7%A3%E6%B3%95%E4%B8%80"><span class="nav-number">1.</span> <span class="nav-text">解法一</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E8%A7%A3%E6%B3%95%E4%BA%8C"><span class="nav-number">2.</span> <span class="nav-text">解法二</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E8%A7%A3%E6%B3%95%E4%B8%89"><span class="nav-number">3.</span> <span class="nav-text">解法三</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%80%BB%E7%BB%93"><span class="nav-number">4.</span> <span class="nav-text">总结</span></a></li></ol>
+    
+    </div>
+  </aside>
+</section>
+        
+      </div>
+
+    </div>
+    <!-- <nav id="mobile-nav">
+  
+    <a href="/" class="mobile-nav-link">Home</a>
+  
+    <a href="/archives" class="mobile-nav-link">Archives</a>
+  
+    <a href="/categories" class="mobile-nav-link">Categories</a>
+  
+    <a href="/tags" class="mobile-nav-link">Tags</a>
+  
+    <a href="/about" class="mobile-nav-link">About</a>
+  
+</nav> -->
+    <footer id="footer" class="site-footer">
+  
+
+  <div class="clearfix container">
+      <div class="site-info">
+	      &copy; 2023 Topthinking All Rights Reserved.
+        <script async src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+        <span id="busuanzi_container_site_pv">本站总访问量<span id="busuanzi_value_site_pv"></span>次</span>
+        <span id="busuanzi_container_site_uv">本站访客数<span id="busuanzi_value_site_uv"></span>人次</span>
+        
+      </div>
+  </div>
+</footer>
+
+
+<!-- min height -->
+
+<script>
+    var wrapdiv = document.getElementById("wrap");
+    var contentdiv = document.getElementById("content");
+
+    wrapdiv.style.minHeight = document.body.offsetHeight - document.getElementById("allheader").offsetHeight - document.getElementById("footer").offsetHeight + "px";
+    contentdiv.style.minHeight = document.body.offsetHeight - document.getElementById("allheader").offsetHeight - document.getElementById("footer").offsetHeight + "px";
+
+
+    <!-- headerblur min height -->
+    
+    
+</script>
+    
+<div style="display: none;">
+  <script src="https://s11.cnzz.com/z_stat.php?id=1260716016&web_id=1260716016" language="JavaScript"></script>
+</div>
+
+<!-- mathjax config similar to math.stackexchange -->
+
+<script type="text/x-mathjax-config">
+  MathJax.Hub.Config({
+    tex2jax: {
+      inlineMath: [ ['$','$'], ["\\(","\\)"] ],
+      processEscapes: true
+    }
+  });
+</script>
+
+<script type="text/x-mathjax-config">
+    MathJax.Hub.Config({
+      tex2jax: {
+        skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+      }
+    });
+</script>
+
+<script type="text/x-mathjax-config">
+    MathJax.Hub.Queue(function() {
+        var all = MathJax.Hub.getAllJax(), i;
+        for(i=0; i < all.length; i += 1) {
+            all[i].SourceElement().parentNode.className += ' has-jax';
+        }
+    });
+</script>
+
+<script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML">
+</script>
+
+
+
+<link rel="stylesheet" href="/fancybox/jquery.fancybox.css">
+
+
+<script src="/fancybox/jquery.fancybox.pack.js"></script>
+
+
+
+
+<script src="/js/script.js"></script>
+
+
+<script src="/js/bootstrap.js"></script>
+
+
+<script src="/js/main.js"></script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  </div>
+
+  <a id="rocket" href="#top" class=""></a>
+  <script type="text/javascript" src="/js/totop.js" async=""></script>
+</body>
+</html>

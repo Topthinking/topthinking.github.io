@@ -173,6 +173,509 @@
         
           <section id="main">
   
+    <article id="post-k8s/start"  class="article article-type-post" itemscope itemprop="blogPost" >
+  <div id="articleInner" class="clearfix post-1016 post type-post status-publish format-standard has-post-thumbnail hentry category-template-2 category-uncategorized tag-codex tag-edge-case tag-featured-image tag-image tag-template">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 class="thumb" itemprop="name">
+      <a class="article-title" href="/2022/05/13/k8s/start/">部署运行k8s</a>
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-meta">
+      
+	<a href="/2022/05/13/k8s/start/" class="article-date">
+	  <time datetime="2022-05-13T07:07:18.471Z" itemprop="datePublished">五月 13, 2022</time>
+	</a>
+
+      
+	<span class="ico-folder"></span>
+    <a class="article-category-link" href="/categories/%E6%9C%8D%E5%8A%A1%E7%AB%AF/">服务端</a>
+ 
+      
+    </div>
+    <div class="article-entry" itemprop="articleBody">
+      
+        <p><strong>重要</strong></p>
+<ol>
+<li><p><code>k8s</code>和<code>docker</code>的版本必须兼容，否则会安装失败<br> 本次使用的<strong><code>k8s-1.19.16</code></strong>，<strong><code>docker-19.03.9</code></strong></p>
+</li>
+<li><p>至少使用两台服务器，你也可以使用虚拟机<br>  <code>注：本文档使用的服务器都是 linux/centos7</code></p>
+</li>
+<li><p>如果机器上有其他版本的docker或者k8s，请全部卸载干净</p>
+</li>
+<li><p>如有任何操作没有达到预期的效果，你进行网络搜索</p>
+</li>
+</ol>
+<h2 id="安装docker19-03-9"><a href="#安装docker19-03-9" class="headerlink" title="安装docker19.03.9"></a>安装docker<code>19.03.9</code></h2><blockquote>
+<p>两台服务器都需要安装<code>docker</code></p>
+</blockquote>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">yum install docker-ce-19.03.9-3.el7 -y</span><br><span class="line">systemctl enable docker</span><br><span class="line">systemctl start docker</span><br></pre></td></tr></table></figure>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#</span><span class="bash"> 打开文件 </span></span><br><span class="line">vim /etc/docker/daemon.json</span><br></pre></td></tr></table></figure>
+<p>输入如下内容</p>
+<figure class="highlight json"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">&#123;</span><br><span class="line">  <span class="attr">&quot;registry-mirrors&quot;</span>: [<span class="string">&quot;https://b9pmyelo.mirror.aliyuncs.com&quot;</span>],</span><br><span class="line">  <span class="attr">&quot;exec-opts&quot;</span>:[<span class="string">&quot;native.cgroupdriver=systemd&quot;</span>]</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#</span><span class="bash"> 重启docker</span></span><br><span class="line">systemctl restart docker</span><br></pre></td></tr></table></figure>
+<h2 id="安装k8s1-19-16"><a href="#安装k8s1-19-16" class="headerlink" title="安装k8s1.19.16"></a>安装k8s<code>1.19.16</code></h2><blockquote>
+<p>两台服务器都需要安装<code>k8s</code></p>
+</blockquote>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#</span><span class="bash"> 跟着步骤依次复制粘贴运行</span></span><br><span class="line"><span class="meta">#</span><span class="bash"> 两台服务器都要执行</span></span><br><span class="line">cat &lt;&lt;EOF &gt; /etc/yum.repos.d/kubernetes.repo</span><br><span class="line">[kubernetes]</span><br><span class="line">name=Kubernetes</span><br><span class="line">baseurl=http://mirrors.aliyun.com/kubernetes/yum/repos/kubernetes-el7-x86_64</span><br><span class="line">enabled=1</span><br><span class="line">gpgcheck=1</span><br><span class="line">repo_gpgcheck=1</span><br><span class="line">gpgkey=https://packages.cloud.google.com/yum/doc/yum-key.gpg https://packages.cloud.google.com/yum/doc/rpm-package-key.gpg</span><br><span class="line">EOF</span><br><span class="line"></span><br><span class="line">setenforce 0</span><br><span class="line"></span><br><span class="line">yum install -y kubelet-1.19.16 kubeadm-1.19.16 kubectl-1.19.16 --disableexcludes=kubernetes</span><br><span class="line">systemctl enable kubelet &amp;&amp; systemctl start kubelet</span><br><span class="line"></span><br><span class="line">cat &lt;&lt;EOF &gt;  /etc/sysctl.d/k8s.conf</span><br><span class="line">net.bridge.bridge-nf-call-ip6tables = 1</span><br><span class="line">net.bridge.bridge-nf-call-iptables = 1</span><br><span class="line">net.ipv4.ip_forward = 1</span><br><span class="line">EOF</span><br><span class="line"></span><br><span class="line">sysctl --system</span><br><span class="line"></span><br><span class="line">sudo systemctl stop firewalld</span><br><span class="line">sudo systemctl disable firewalld</span><br><span class="line">sudo swapoff -a</span><br><span class="line"></span><br><span class="line">systemctl daemon-reload</span><br><span class="line">systemctl restart kubelet</span><br><span class="line"></span><br><span class="line">systemctl enable docker.service</span><br><span class="line">systemctl enable kubelet.service</span><br><span class="line"></span><br><span class="line">echo &quot;export KUBECONFIG=/etc/kubernetes/admin.conf&quot; &gt;&gt; /etc/profile</span><br><span class="line">source /etc/profile</span><br></pre></td></tr></table></figure>
+<h3 id="master服务器初始化kubeadm"><a href="#master服务器初始化kubeadm" class="headerlink" title="master服务器初始化kubeadm"></a>master服务器初始化<code>kubeadm</code></h3><figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">kubeadm init \</span><br><span class="line">--image-repository registry.cn-hangzhou.aliyuncs.com/google_containers \</span><br><span class="line">--kubernetes-version v1.19.16 \</span><br><span class="line">--ignore-preflight-errors=Swap \</span><br><span class="line"><span class="meta">#</span><span class="bash"> pod网段</span></span><br><span class="line">--pod-network-cidr 200.100.0.0/16 \</span><br><span class="line"><span class="meta">#</span><span class="bash"> 当前master服务器的ip</span></span><br><span class="line">--apiserver-advertise-address 192.168.1.100</span><br></pre></td></tr></table></figure>
+<blockquote>
+<p>经过一段时间后，初始化完毕，终端显示如下内容，请务必保存好</p>
+</blockquote>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#</span><span class="bash"> 务必保存好，在worker节点运行</span></span><br><span class="line">kubeadm join 192.168.1.100:6443 --token 02fbxd.3w8re5u8avpbnw5z \</span><br><span class="line">--discovery-token-ca-cert-hash sha256:44b8880409e4e09c395a69599049320c90425700c60f3f219c779d7e8182a5bd</span><br></pre></td></tr></table></figure>
+<blockquote>
+<p>继续查看服务启动情况，确保启动完毕</p>
+</blockquote>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">mkdir -p <span class="variable">$HOME</span>/.kube</span><br><span class="line">sudo cp -i /etc/kubernetes/admin.conf <span class="variable">$HOME</span>/.kube/config</span><br><span class="line">sudo chown $(id -u):$(id -g) <span class="variable">$HOME</span>/.kube/config</span><br></pre></td></tr></table></figure>
+<blockquote>
+<p>检查pod</p>
+</blockquote>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">kubectl get pod --all-namespaces</span><br></pre></td></tr></table></figure>
+<p>直到全部running</p>
+<h3 id="master服务器安装网络插件"><a href="#master服务器安装网络插件" class="headerlink" title="master服务器安装网络插件"></a>master服务器安装网络插件</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">kubectl apply -f <span class="string">&quot;https://cloud.weave.works/k8s/net?k8s-version=<span class="subst">$(kubectl version | base64 | tr -d &#x27;\n&#x27;)</span>&quot;</span></span><br></pre></td></tr></table></figure>
+<blockquote>
+<p>检查pod</p>
+</blockquote>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">kubectl get pod --all-namespaces</span><br></pre></td></tr></table></figure>
+<p>直到全部running</p>
+<h3 id="添加worker节点"><a href="#添加worker节点" class="headerlink" title="添加worker节点"></a>添加worker节点</h3><blockquote>
+<p>请确认worker节点已经安装好docker和k8s了</p>
+</blockquote>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">kubeadm join 192.168.1.100:6443 --token 02fbxd.3w8re5u8avpbnw5z \</span><br><span class="line">--discovery-token-ca-cert-hash sha256:44b8880409e4e09c395a69599049320c90425700c60f3f219c779d7e8182a5bd</span><br></pre></td></tr></table></figure>
+<p>添加成功后</p>
+<h3 id="回到master节点"><a href="#回到master节点" class="headerlink" title="回到master节点"></a>回到master节点</h3><figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#</span><span class="bash">查看node</span></span><br><span class="line">kubectl get nodes</span><br></pre></td></tr></table></figure>
+<p><strong>请确保全部Ready，如果没有，请网络搜索</strong></p>
+<h2 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h2><blockquote>
+<p>至此，k8s安装部署完成，k8s之路才刚刚开始</p>
+<p>我们将使用<code>kubectl</code>命令做很多事情，请接下来熟悉<code>kubectl</code>的使用方法</p>
+</blockquote>
+<p>最终成功后，在master节点，可以看到如下打印示例</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">[root@k8s-master ~]$ kubectl get nodes</span><br><span class="line">NAME         STATUS   ROLES    AGE     VERSION</span><br><span class="line">k8s-master   Ready    master   25m     v1.19.16</span><br><span class="line">k8s-node1    Ready    &lt;none&gt;   11m     v1.19.16</span><br><span class="line">[root@k8s-master ~]$ </span><br></pre></td></tr></table></figure>
+      
+    </div>
+    <footer class="entry-meta entry-footer">
+      
+	<span class="ico-folder"></span>
+    <a class="article-category-link" href="/categories/%E6%9C%8D%E5%8A%A1%E7%AB%AF/">服务端</a>
+
+      
+  <span class="ico-tags"></span>
+  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/docker/" rel="tag">docker</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/k8s/" rel="tag">k8s</a></li></ul>
+
+      
+    </footer>
+    <hr class="entry-footer-hr">
+  </div>
+  
+</article>
+
+<!-- Table of Contents -->
+
+  
+    <article id="post-leetcode/全排列"  class="article article-type-post" itemscope itemprop="blogPost" >
+  <div id="articleInner" class="clearfix post-1016 post type-post status-publish format-standard has-post-thumbnail hentry category-template-2 category-uncategorized tag-codex tag-edge-case tag-featured-image tag-image tag-template">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 class="thumb" itemprop="name">
+      <a class="article-title" href="/2022/05/13/leetcode/%E5%85%A8%E6%8E%92%E5%88%97/">全排列</a>
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-meta">
+      
+	<a href="/2022/05/13/leetcode/%E5%85%A8%E6%8E%92%E5%88%97/" class="article-date">
+	  <time datetime="2022-05-13T07:07:18.471Z" itemprop="datePublished">五月 13, 2022</time>
+	</a>
+
+      
+	<span class="ico-folder"></span>
+    <a class="article-category-link" href="/categories/LeetCode/">LeetCode</a>
+ 
+      
+    </div>
+    <div class="article-entry" itemprop="articleBody">
+      
+        <p>输入一个长度为n的字符串，输出该字符串中字符的全排列</p>
+<h2 id="解法一"><a href="#解法一" class="headerlink" title="解法一"></a>解法一</h2><blockquote>
+<p>使用递归，但是这样会出现重复的，需要做去重处理</p>
+</blockquote>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">const</span> permutation = <span class="function">(<span class="params">str</span>) =&gt;</span> &#123;</span><br><span class="line">  <span class="keyword">const</span> result = [];</span><br><span class="line"></span><br><span class="line">  <span class="comment">// 用来交换数组的两个位置上的值</span></span><br><span class="line">  <span class="keyword">const</span> swap = <span class="function">(<span class="params">arr, start, end</span>) =&gt;</span> &#123;</span><br><span class="line">    <span class="keyword">const</span> tmp = arr[start];</span><br><span class="line">    arr[start] = arr[end];</span><br><span class="line">    arr[end] = tmp;</span><br><span class="line">    <span class="keyword">return</span> arr;</span><br><span class="line">  &#125;;</span><br><span class="line"></span><br><span class="line">  <span class="comment">// 开始执行递归逻辑</span></span><br><span class="line">  <span class="comment">// arr是当前传入的字符串数组</span></span><br><span class="line">  <span class="comment">// begin是当前开始处理的位置，开始为0</span></span><br><span class="line">  <span class="keyword">const</span> run = <span class="function">(<span class="params">arr, begin</span>) =&gt;</span> &#123;</span><br><span class="line">    <span class="keyword">if</span> (begin === arr.length) &#123;</span><br><span class="line">      <span class="comment">// 当begin累加到当前最大值时，将其输出</span></span><br><span class="line">      res.push(arr.join(<span class="string">&#x27;&#x27;</span>));</span><br><span class="line">    &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">      <span class="keyword">for</span> (<span class="keyword">let</span> i = begin; i &lt; arr.length; i++) &#123;</span><br><span class="line">        swap(arr, i, begin);</span><br><span class="line">        run(arr, begin + <span class="number">1</span>);</span><br><span class="line">        swap(arr, i, begin);</span><br><span class="line">      &#125;</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;;</span><br><span class="line"></span><br><span class="line">  run(str.split(<span class="string">&#x27;&#x27;</span>), <span class="number">0</span>);</span><br><span class="line">  <span class="keyword">return</span> <span class="built_in">Array</span>.from(<span class="keyword">new</span> <span class="built_in">Set</span>(res));</span><br><span class="line">&#125;;</span><br><span class="line"><span class="built_in">console</span>.log(permutation(<span class="string">&#x27;123&#x27;</span>))</span><br><span class="line"><span class="comment">// 输出</span></span><br><span class="line"><span class="comment">// [ &#x27;123&#x27;, &#x27;132&#x27;, &#x27;213&#x27;, &#x27;231&#x27;, &#x27;321&#x27;, &#x27;312&#x27; ]</span></span><br></pre></td></tr></table></figure>
+<p>说明：<br><strong>使用<code>123</code>举列</strong></p>
+<ol>
+<li><p>第一个swap说明，将每一位的值和第一位交换位置<br> 第一层循环会得到这些结果<br> <code>1xx</code>、<code>2xx</code>、<code>3xx</code></p>
+</li>
+<li><p><code>1xx</code>：后，开始执行递归函数<code>run</code>，<br> 这个时候继续走逻辑，begin变为1，递归后循环结果: <code>123</code>，接着继续递归，发现<code>begin === arr.length</code>，这个时候输出<code>123</code>，本次递归结束<br> 回到for循环，这个时候swap，<code>132</code>，继续递归，有发现<code>begin === arr.length</code>，这个时候输出<code>132</code><br> 至此<code>1xx</code>后的for循环和递归结束</p>
+</li>
+<li><p>后续的<code>2xx</code>和<code>3xx</code>，同理上述<code>1xx</code>的描述</p>
+</li>
+</ol>
+<h2 id="解法二"><a href="#解法二" class="headerlink" title="解法二"></a>解法二</h2><blockquote>
+<p>基于上述的解法，如果传入的字符串是<code>abb</code>，则会出现重复的排列值，需要做去重，上述方法，使用了<code>new Set</code>方法对数组做去重，那能否有方法不需要去重就能实现了，同时也不增加额外的空间开销，同时算法的时间复杂度也最小</p>
+<p>不断地计算当前字符串的字典序中下一个更大的排列，直到不存在更大的排列为止即可</p>
+</blockquote>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">const</span> permutation = <span class="function"><span class="keyword">function</span> (<span class="params">s</span>) </span>&#123;</span><br><span class="line">  <span class="keyword">const</span> res = [];</span><br><span class="line"></span><br><span class="line">  <span class="keyword">const</span> arr = <span class="built_in">Array</span>.from(s).sort();</span><br><span class="line"></span><br><span class="line">  res.push(arr.join(<span class="string">&#x27;&#x27;</span>));</span><br><span class="line"></span><br><span class="line">  <span class="keyword">const</span> swap = <span class="function">(<span class="params">arr, i, j</span>) =&gt;</span> &#123;</span><br><span class="line">    <span class="keyword">const</span> temp = arr[i];</span><br><span class="line">    arr[i] = arr[j];</span><br><span class="line">    arr[j] = temp;</span><br><span class="line">  &#125;;</span><br><span class="line"></span><br><span class="line">  <span class="keyword">const</span> reverse = <span class="function">(<span class="params">arr, start</span>) =&gt;</span> &#123;</span><br><span class="line">    <span class="keyword">let</span> left = start,</span><br><span class="line">      right = arr.length - <span class="number">1</span>;</span><br><span class="line">    <span class="keyword">while</span> (left &lt; right) &#123;</span><br><span class="line">      swap(arr, left, right);</span><br><span class="line">      left++;</span><br><span class="line">      right--;</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;;</span><br><span class="line"></span><br><span class="line">  <span class="keyword">const</span> nextPermutation = <span class="function">(<span class="params">arr</span>) =&gt;</span> &#123;</span><br><span class="line">    <span class="keyword">let</span> i = arr.length - <span class="number">2</span>;</span><br><span class="line">    <span class="keyword">while</span> (i &gt;= <span class="number">0</span> &amp;&amp; arr[i] &gt;= arr[i + <span class="number">1</span>]) &#123;</span><br><span class="line">      i--;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">if</span> (i &lt; <span class="number">0</span>) &#123;</span><br><span class="line">      <span class="keyword">return</span> <span class="literal">false</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">let</span> j = arr.length - <span class="number">1</span>;</span><br><span class="line">    <span class="keyword">while</span> (j &gt;= <span class="number">0</span> &amp;&amp; arr[i] &gt;= arr[j]) &#123;</span><br><span class="line">      j--;</span><br><span class="line">    &#125;</span><br><span class="line">    swap(arr, i, j);</span><br><span class="line">    reverse(arr, i + <span class="number">1</span>);</span><br><span class="line">    <span class="keyword">return</span> <span class="literal">true</span>;</span><br><span class="line">  &#125;;</span><br><span class="line"></span><br><span class="line">  <span class="keyword">while</span> (nextPermutation(arr)) &#123;</span><br><span class="line">    res.push(arr.join(<span class="string">&#x27;&#x27;</span>));</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  <span class="keyword">return</span> res;</span><br><span class="line">&#125;;</span><br><span class="line"><span class="built_in">console</span>.log(permutation(<span class="string">&#x27;123&#x27;</span>))</span><br><span class="line"><span class="comment">// 输出</span></span><br><span class="line"><span class="comment">// [ &#x27;123&#x27;, &#x27;132&#x27;, &#x27;213&#x27;, &#x27;231&#x27;, &#x27;312&#x27;, &#x27;321&#x27; ]</span></span><br></pre></td></tr></table></figure>
+<h2 id="解法三"><a href="#解法三" class="headerlink" title="解法三"></a>解法三</h2><blockquote>
+<p>使用深度优先遍历（dfs）</p>
+<p>当然该解法，没有去重，还需要加个去重处理</p>
+</blockquote>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">const</span> permutation = <span class="function">(<span class="params">nums</span>) =&gt;</span> &#123;</span><br><span class="line">  <span class="keyword">const</span> res = [];</span><br><span class="line">  <span class="keyword">const</span> len = nums.length;</span><br><span class="line">  <span class="keyword">if</span> (len === <span class="number">0</span>) &#123;</span><br><span class="line">    <span class="keyword">return</span> res;</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  <span class="keyword">const</span> depth = <span class="number">0</span>;</span><br><span class="line">  <span class="keyword">const</span> path = [];</span><br><span class="line">  <span class="keyword">const</span> used = &#123;&#125;;</span><br><span class="line"></span><br><span class="line">  dfs(nums, len, depth, path, used, res);</span><br><span class="line"></span><br><span class="line">  <span class="keyword">return</span> res;</span><br><span class="line">&#125;;</span><br><span class="line"></span><br><span class="line"><span class="keyword">const</span> dfs = <span class="function">(<span class="params">nums, len, depth, path, used, res</span>) =&gt;</span> &#123;</span><br><span class="line">  <span class="keyword">if</span> (len === depth) &#123;</span><br><span class="line">    res.push([...path]);</span><br><span class="line">    <span class="keyword">return</span>;</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  <span class="keyword">for</span> (<span class="keyword">let</span> i = <span class="number">0</span>; i &lt; len; i++) &#123;</span><br><span class="line">    <span class="keyword">if</span> (used[nums[i]]) &#123;</span><br><span class="line">      <span class="keyword">continue</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    used[nums[i]] = <span class="literal">true</span>;</span><br><span class="line">    path.push(nums[i]);</span><br><span class="line">    dfs(nums, len, depth + <span class="number">1</span>, path, used, res);</span><br><span class="line">    path.pop();</span><br><span class="line">    used[nums[i]] = <span class="literal">false</span>;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;;</span><br><span class="line"></span><br><span class="line"><span class="built_in">console</span>.log(permutation(<span class="string">&#x27;123&#x27;</span>))</span><br></pre></td></tr></table></figure>
+<h2 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h2><p>可以看到输出结果和解法一都不一样</p>
+<p>解法一：<code>[ &#39;123&#39;, &#39;132&#39;, &#39;213&#39;, &#39;231&#39;, &#39;321&#39;, &#39;312&#39; ]</code><br>解法二：<code>[ &#39;123&#39;, &#39;132&#39;, &#39;213&#39;, &#39;231&#39;, &#39;312&#39;, &#39;321&#39; ]</code></p>
+<p>第二种解法是基于字典序的递归查找，这样查找出来的结果，不仅没有重复，而且按字典序进行排序，不需要再进行排序</p>
+<p>第一种解法基于遍历的递归交换查找，必然没有任何顺序，但是同样也能很快的找出所有的结果，但势必会有重复的</p>
+<blockquote>
+<p>耗时测试</p>
+</blockquote>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">const</span> a = <span class="string">&#x27;0123456789&#x27;</span>;</span><br><span class="line"><span class="built_in">console</span>.time();</span><br><span class="line"><span class="built_in">console</span>.log(方案二(a).length);</span><br><span class="line"><span class="built_in">console</span>.timeEnd();</span><br><span class="line"></span><br><span class="line"><span class="built_in">console</span>.time();</span><br><span class="line"><span class="built_in">console</span>.log(方案一(a).length);</span><br><span class="line"><span class="built_in">console</span>.timeEnd();</span><br></pre></td></tr></table></figure>
+<blockquote>
+<p>执行输出</p>
+</blockquote>
+<figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">3628800</span><br><span class="line">default: 1231.317ms</span><br><span class="line">3628800</span><br><span class="line">default: 2406.821ms</span><br></pre></td></tr></table></figure>
+<p>由此可见，方案二比方案一，快了1倍</p>
+
+      
+    </div>
+    <footer class="entry-meta entry-footer">
+      
+	<span class="ico-folder"></span>
+    <a class="article-category-link" href="/categories/LeetCode/">LeetCode</a>
+
+      
+  <span class="ico-tags"></span>
+  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/%E7%AE%97%E6%B3%95/" rel="tag">算法</a></li></ul>
+
+      
+    </footer>
+    <hr class="entry-footer-hr">
+  </div>
+  
+</article>
+
+<!-- Table of Contents -->
+
+  
+    <article id="post-leetcode/新爬楼梯"  class="article article-type-post" itemscope itemprop="blogPost" >
+  <div id="articleInner" class="clearfix post-1016 post type-post status-publish format-standard has-post-thumbnail hentry category-template-2 category-uncategorized tag-codex tag-edge-case tag-featured-image tag-image tag-template">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 class="thumb" itemprop="name">
+      <a class="article-title" href="/2022/05/13/leetcode/%E6%96%B0%E7%88%AC%E6%A5%BC%E6%A2%AF/">新爬楼梯(一步登天)(列出具体爬法)</a>
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-meta">
+      
+	<a href="/2022/05/13/leetcode/%E6%96%B0%E7%88%AC%E6%A5%BC%E6%A2%AF/" class="article-date">
+	  <time datetime="2022-05-13T07:07:18.471Z" itemprop="datePublished">五月 13, 2022</time>
+	</a>
+
+      
+	<span class="ico-folder"></span>
+    <a class="article-category-link" href="/categories/LeetCode/">LeetCode</a>
+ 
+      
+    </div>
+    <div class="article-entry" itemprop="articleBody">
+      
+        <p>原题爬楼梯，请直接参考<a target="_blank" rel="noopener" href="https://leetcode-cn.com/problems/climbing-stairs/comments/">leetcode-爬楼梯</a></p>
+<blockquote>
+<p>建议先阅读下leetcode原题，也可以直接往下看该题的解题思路</p>
+<p>我在其基础上做了一个抽象，即使用<strong>任意步数</strong>，<strong>爬任意高</strong>的楼梯，爬到最后一层<strong>有多少种爬法</strong></p>
+</blockquote>
+<h2 id="推导出转移方程"><a href="#推导出转移方程" class="headerlink" title="推导出转移方程"></a>推导出转移方程</h2><p>假设，爬楼梯，可以1步、2步、3步。。。。n步<br>楼梯总高为m，那么爬到m层，所有爬法的方程如下</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">f(m) &#x3D; f(m-1) + f(m-2) + f(m-3) + ... + f(m-n)</span><br><span class="line"></span><br><span class="line">即：需要爬到m层的爬法，由如下的层数的爬法累加得到</span><br></pre></td></tr></table></figure>
+<blockquote>
+<p>先进行数学归纳法</p>
+<p>假设步骤只有1步、2步、3步</p>
+<p>看如下数学归纳法</p>
+</blockquote>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line">&#x2F;&#x2F; f函数的参数，表示当前爬的楼层数</span><br><span class="line">&#x2F;&#x2F; 值表示：爬到该层数，所有的爬法数</span><br><span class="line">f(0) &#x3D; 0; </span><br><span class="line">&#x2F;&#x2F; f(1) &#x3D; f(1-1) + 1</span><br><span class="line">f(1) &#x3D; f(0) + 1; &#x2F;&#x2F; 这里加1的目的，表示，当前可以一步爬上去，看如下说明，即可明白</span><br><span class="line"></span><br><span class="line">&#x2F;&#x2F; f(2) &#x3D; f(2-1) + f(2-2) + 1;</span><br><span class="line">f(2) &#x3D; f(1) + f(0) + 1; &#x2F;&#x2F; 支持一次爬2步，那么也需要加上一步登天 +1</span><br><span class="line"></span><br><span class="line">&#x2F;&#x2F; f(3) &#x3D; f(3-1) + f(3-2) + f(3-3) + 1</span><br><span class="line">f(3) &#x3D; f(2) + f(1) + f(0) + 1; &#x2F;&#x2F; 同样支持一次爬3步，一步登天  +1 </span><br><span class="line"></span><br><span class="line">&#x2F;&#x2F; f(4) &#x3D; f(4-1) + f(4-2) + f(4-3)</span><br><span class="line">&#x2F;&#x2F; f(5) &#x3D; f(5-1) + f(5-2) + f(5-3)</span><br><span class="line"></span><br><span class="line">...</span><br><span class="line"></span><br><span class="line">f(5) &#x3D; f(4) + f(3) + f(2) &#x2F;&#x2F; 没有一步登天，即计算完毕</span><br></pre></td></tr></table></figure>
+<p><strong>所以，我们看到，这里存在一个<code>一步登天</code>的变量，需要另外加上去</strong></p>
+<h2 id="代码实现"><a href="#代码实现" class="headerlink" title="代码实现"></a>代码实现</h2><figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">const</span> newClimbStairs = <span class="function">(<span class="params">total, steps</span>) =&gt;</span> &#123;</span><br><span class="line">  <span class="keyword">const</span> f = &#123;&#125;;</span><br><span class="line">  <span class="comment">// 初始状态定位0，即没有爬楼</span></span><br><span class="line">  f[<span class="number">0</span>] = <span class="number">0</span>;</span><br><span class="line"></span><br><span class="line">  <span class="keyword">for</span> (<span class="keyword">let</span> i = <span class="number">1</span>; i &lt;= total; i++) &#123;</span><br><span class="line">    f[i] = <span class="number">0</span>;</span><br><span class="line">    <span class="keyword">for</span> (<span class="keyword">let</span> j = <span class="number">0</span>; j &lt; steps.length; j++) &#123;</span><br><span class="line">      <span class="keyword">if</span> (i &gt; steps[j]) &#123;</span><br><span class="line">        <span class="comment">// 只要当前楼层大于当前步数，就进行累加</span></span><br><span class="line">        f[i] = f[i - steps[j]] + f[i];</span><br><span class="line">      &#125;</span><br><span class="line">      <span class="comment">// 这里是一步登天的判断</span></span><br><span class="line">      <span class="keyword">if</span> (i === steps[j]) &#123;</span><br><span class="line">        <span class="comment">// 如果发现当前楼层支持一步登天，就再加上1</span></span><br><span class="line">        f[i] = f[i] + <span class="number">1</span>;</span><br><span class="line">      &#125;</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="keyword">return</span> f[total];</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+<h2 id="测试结果"><a href="#测试结果" class="headerlink" title="测试结果"></a>测试结果</h2><blockquote>
+<p>多了一个一步登天的<strong>“爬50步”</strong>，所有步骤也仅仅多了一步</p>
+</blockquote>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">console</span>.log(newClimbStairs(<span class="number">50</span>, [<span class="number">1</span>, <span class="number">2</span>]));</span><br><span class="line"><span class="built_in">console</span>.log(newClimbStairs(<span class="number">50</span>, [<span class="number">1</span>, <span class="number">2</span>, <span class="number">50</span>]));</span><br><span class="line"><span class="comment">// 20365011074</span></span><br><span class="line"><span class="comment">// 20365011075</span></span><br></pre></td></tr></table></figure>
+<h2 id="计算爬法步骤"><a href="#计算爬法步骤" class="headerlink" title="计算爬法步骤"></a>计算爬法步骤</h2><blockquote>
+<p>我们已经基于动态规划的方式，计算出爬楼梯的爬法步骤，但是并不知道具体怎么爬</p>
+<p>那么接下来，这个算法，将列出，这些具体的爬法是什么</p>
+</blockquote>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 将数组的值进行累加</span></span><br><span class="line"><span class="keyword">const</span> arrAll = <span class="function">(<span class="params">a</span>) =&gt;</span> &#123;</span><br><span class="line">  <span class="keyword">let</span> sum = <span class="number">0</span>;</span><br><span class="line">  <span class="keyword">for</span> (<span class="keyword">let</span> i = <span class="number">0</span>; i &lt; a.length; i++) &#123;</span><br><span class="line">    sum += a[i];</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="keyword">return</span> sum;</span><br><span class="line">&#125;;</span><br><span class="line"></span><br><span class="line"><span class="keyword">const</span> start = <span class="function">(<span class="params">steps, target</span>) =&gt;</span> &#123;</span><br><span class="line">  <span class="keyword">const</span> res = [];</span><br><span class="line"></span><br><span class="line">  <span class="keyword">for</span> (<span class="keyword">let</span> i = <span class="number">0</span>; i &lt; steps.length; i++) &#123;</span><br><span class="line">    res.push([steps[i]]);</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  <span class="comment">// 把每一层都走一遍</span></span><br><span class="line">  <span class="keyword">for</span> (<span class="keyword">let</span> i = <span class="number">1</span>; i &lt;= target; i++) &#123;</span><br><span class="line">    <span class="comment">// 给走过的层数，添加当前这一层需要走的步</span></span><br><span class="line">    <span class="keyword">for</span> (<span class="keyword">let</span> j = <span class="number">0</span>; j &lt; res.length; j++) &#123;</span><br><span class="line">      <span class="comment">// 添加步数</span></span><br><span class="line">      <span class="keyword">for</span> (<span class="keyword">let</span> m = <span class="number">0</span>; m &lt; steps.length; m++) &#123;</span><br><span class="line">        <span class="keyword">const</span> value = [...res[j], steps[m]];</span><br><span class="line">        <span class="comment">// 步数操作总层数，就不再进行计算了</span></span><br><span class="line">        <span class="keyword">if</span> (arrAll(value) &lt;= target) &#123;</span><br><span class="line">          res.push(value);</span><br><span class="line">        &#125;</span><br><span class="line">      &#125;</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  <span class="keyword">const</span> result = [];</span><br><span class="line"></span><br><span class="line">  <span class="keyword">for</span> (<span class="keyword">let</span> i = <span class="number">0</span>; i &lt; res.length; i++) &#123;</span><br><span class="line">    <span class="keyword">if</span> (arrAll(res[i]) === target) &#123;</span><br><span class="line">      result.push(res[i].join(<span class="string">&quot;-&quot;</span>));</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  <span class="keyword">return</span> <span class="built_in">Array</span>.from(<span class="keyword">new</span> <span class="built_in">Set</span>(result));</span><br><span class="line">&#125;;</span><br><span class="line"><span class="built_in">console</span>.log(start([<span class="number">1</span>, <span class="number">2</span>, <span class="number">3</span>], <span class="number">4</span>));</span><br><span class="line"><span class="comment">// 输出</span></span><br><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment">[</span></span><br><span class="line"><span class="comment">  &#x27;1-3&#x27;,     &#x27;2-2&#x27;,</span></span><br><span class="line"><span class="comment">  &#x27;3-1&#x27;,     &#x27;1-1-2&#x27;,</span></span><br><span class="line"><span class="comment">  &#x27;1-2-1&#x27;,   &#x27;2-1-1&#x27;,</span></span><br><span class="line"><span class="comment">  &#x27;1-1-1-1&#x27;</span></span><br><span class="line"><span class="comment">]</span></span><br><span class="line"><span class="comment">总计7种爬法</span></span><br><span class="line"><span class="comment">*/</span></span><br></pre></td></tr></table></figure>
+      
+    </div>
+    <footer class="entry-meta entry-footer">
+      
+	<span class="ico-folder"></span>
+    <a class="article-category-link" href="/categories/LeetCode/">LeetCode</a>
+
+      
+  <span class="ico-tags"></span>
+  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/%E7%AE%97%E6%B3%95/" rel="tag">算法</a></li></ul>
+
+      
+    </footer>
+    <hr class="entry-footer-hr">
+  </div>
+  
+</article>
+
+<!-- Table of Contents -->
+
+  
+    <article id="post-go/mongo"  class="article article-type-post" itemscope itemprop="blogPost" >
+  <div id="articleInner" class="clearfix post-1016 post type-post status-publish format-standard has-post-thumbnail hentry category-template-2 category-uncategorized tag-codex tag-edge-case tag-featured-image tag-image tag-template">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 class="thumb" itemprop="name">
+      <a class="article-title" href="/2022/05/13/go/mongo/">go语言之mongo-db操作</a>
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-meta">
+      
+	<a href="/2022/05/13/go/mongo/" class="article-date">
+	  <time datetime="2022-05-13T07:07:18.470Z" itemprop="datePublished">五月 13, 2022</time>
+	</a>
+
+      
+	<span class="ico-folder"></span>
+    <a class="article-category-link" href="/categories/%E6%9C%8D%E5%8A%A1%E7%AB%AF/">服务端</a>
+ 
+      
+    </div>
+    <div class="article-entry" itemprop="articleBody">
+      
+        <blockquote>
+<p>主要罗列出使用 go 语言操作 mongo 的一些细节和注意事项</p>
+<p>基于<code>go.mongodb.org/mongo-driver</code></p>
+</blockquote>
+<h2 id="连接-mongo-db"><a href="#连接-mongo-db" class="headerlink" title="连接 mongo-db"></a>连接 mongo-db</h2><figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">package</span> main</span><br><span class="line"></span><br><span class="line"><span class="keyword">import</span> (</span><br><span class="line">    <span class="string">&quot;context&quot;</span></span><br><span class="line">    <span class="string">&quot;fmt&quot;</span></span><br><span class="line"></span><br><span class="line">    <span class="string">&quot;go.mongodb.org/mongo-driver/mongo&quot;</span></span><br><span class="line">    <span class="string">&quot;go.mongodb.org/mongo-driver/mongo/options&quot;</span></span><br><span class="line">)</span><br><span class="line"></span><br><span class="line"><span class="comment">// Db mongo</span></span><br><span class="line"><span class="keyword">var</span> Db *mongo.Client</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">main</span><span class="params">()</span></span> &#123;</span><br><span class="line">    <span class="comment">// 设置客户端连接配置</span></span><br><span class="line">    clientOptions := options.Client().ApplyURI(<span class="string">&quot;mongodb://192.168.41.11:6300&quot;</span>)</span><br><span class="line"></span><br><span class="line">    <span class="comment">// 连接到MongoDB</span></span><br><span class="line">    client, err := mongo.Connect(context.TODO(), clientOptions)</span><br><span class="line">    <span class="keyword">if</span> err != <span class="literal">nil</span> &#123;</span><br><span class="line">        <span class="built_in">panic</span>(<span class="string">&quot;mongodb创建失败&quot;</span> + err.Error())</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">// 检查连接</span></span><br><span class="line">    err = client.Ping(context.TODO(), <span class="literal">nil</span>)</span><br><span class="line">    <span class="keyword">if</span> err != <span class="literal">nil</span> &#123;</span><br><span class="line">        <span class="built_in">panic</span>(<span class="string">&quot;mongodb连接失败&quot;</span> + err.Error())</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    Db = client</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h1 id=""><a href="#" class="headerlink" title="#"></a>#</h1>
+      
+    </div>
+    <footer class="entry-meta entry-footer">
+      
+	<span class="ico-folder"></span>
+    <a class="article-category-link" href="/categories/%E6%9C%8D%E5%8A%A1%E7%AB%AF/">服务端</a>
+
+      
+  <span class="ico-tags"></span>
+  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/go/" rel="tag">go</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/mongo/" rel="tag">mongo</a></li></ul>
+
+      
+    </footer>
+    <hr class="entry-footer-hr">
+  </div>
+  
+</article>
+
+<!-- Table of Contents -->
+
+  
+    <article id="post-go/promise.all"  class="article article-type-post" itemscope itemprop="blogPost" >
+  <div id="articleInner" class="clearfix post-1016 post type-post status-publish format-standard has-post-thumbnail hentry category-template-2 category-uncategorized tag-codex tag-edge-case tag-featured-image tag-image tag-template">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 class="thumb" itemprop="name">
+      <a class="article-title" href="/2022/05/13/go/promise.all/">go实现类似Promise.all的功能</a>
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-meta">
+      
+	<a href="/2022/05/13/go/promise.all/" class="article-date">
+	  <time datetime="2022-05-13T07:07:18.470Z" itemprop="datePublished">五月 13, 2022</time>
+	</a>
+
+      
+	<span class="ico-folder"></span>
+    <a class="article-category-link" href="/categories/%E6%9C%8D%E5%8A%A1%E7%AB%AF/">服务端</a>
+ 
+      
+    </div>
+    <div class="article-entry" itemprop="articleBody">
+      
+        <blockquote>
+<p>主要用来加深对于<code>goroutine</code>和<code>channel</code>的理解吧</p>
+</blockquote>
+<h2 id="什么是Promise-all"><a href="#什么是Promise-all" class="headerlink" title="什么是Promise.all"></a><code>什么是Promise.all</code></h2><blockquote>
+<p>Promise.all 可以将多个 Promise 实例包装成一个新的 Promise 实例。<br>同时，成功和失败的返回值是不同的，<br>成功的时候返回的是一个结果数组，而失败的时候则返回最先被 reject 失败状态的值</p>
+</blockquote>
+<h2 id="javascript"><a href="#javascript" class="headerlink" title="javascript"></a><code>javascript</code></h2><figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// run1和run2函数都返回promise</span></span><br><span class="line"><span class="built_in">Promise</span>.all([run1(), run2()]).then(<span class="function">(<span class="params">res</span>) =&gt;</span> &#123;</span><br><span class="line">  <span class="comment">// res的数据是个数组</span></span><br><span class="line">  <span class="keyword">const</span> [run1Res, run2Res] = res;</span><br><span class="line">  <span class="built_in">console</span>.log(run1Res, run2Res);</span><br><span class="line">&#125;);</span><br></pre></td></tr></table></figure>
+<h2 id="go"><a href="#go" class="headerlink" title="go"></a><code>go</code></h2><blockquote>
+<p>需要用到<code>协程 goroutine</code>和<code>通道 channel</code></p>
+</blockquote>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">package</span> main</span><br><span class="line"></span><br><span class="line"><span class="keyword">import</span> (</span><br><span class="line">    <span class="string">&quot;fmt&quot;</span></span><br><span class="line">    <span class="string">&quot;sort&quot;</span></span><br><span class="line">    <span class="string">&quot;time&quot;</span></span><br><span class="line">)</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">main</span><span class="params">()</span></span> &#123;</span><br><span class="line"></span><br><span class="line">    start := time.Now().Unix()</span><br><span class="line"></span><br><span class="line">    out1 := run1(<span class="number">1</span>, <span class="number">2</span>, <span class="number">0</span>, <span class="number">-1</span>, <span class="number">92</span>, <span class="number">22</span>, <span class="number">33</span>, <span class="number">82</span>, <span class="number">11</span>)</span><br><span class="line">    out2 := run2(<span class="number">1</span>, <span class="number">2</span>, <span class="number">0</span>, <span class="number">-1</span>, <span class="number">92</span>, <span class="number">22</span>, <span class="number">33</span>, <span class="number">82</span>, <span class="number">11</span>)</span><br><span class="line"></span><br><span class="line">    res1 := []<span class="keyword">int</span>&#123;&#125;</span><br><span class="line">    res2 := []<span class="keyword">int</span>&#123;&#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">for</span> v := <span class="keyword">range</span> out1 &#123;</span><br><span class="line">        res1 = <span class="built_in">append</span>(res1, v)</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">for</span> v := <span class="keyword">range</span> out2 &#123;</span><br><span class="line">        res2 = <span class="built_in">append</span>(res2, v)</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">// 这里的耗时是4秒，而不是6秒</span></span><br><span class="line">    <span class="comment">// 即同时执行，多协程抢占式进行任务</span></span><br><span class="line">    fmt.Println(res1, res2)</span><br><span class="line">    fmt.Println(<span class="string">&quot;耗时：&quot;</span>, time.Now().Unix()-start, <span class="string">&quot; 秒&quot;</span>)</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">run1</span><span class="params">(a ...<span class="keyword">int</span>)</span> &lt;-<span class="title">chan</span> <span class="title">int</span></span> &#123;</span><br><span class="line">    out := <span class="built_in">make</span>(<span class="keyword">chan</span> <span class="keyword">int</span>)</span><br><span class="line">    <span class="keyword">go</span> <span class="function"><span class="keyword">func</span><span class="params">()</span></span> &#123;</span><br><span class="line"></span><br><span class="line">        sort.Ints(a)</span><br><span class="line"></span><br><span class="line">        time.Sleep(time.Second * <span class="number">4</span>)</span><br><span class="line"></span><br><span class="line">        <span class="keyword">for</span> _, v := <span class="keyword">range</span> a &#123;</span><br><span class="line">            out &lt;- v</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        <span class="built_in">close</span>(out)</span><br><span class="line">    &#125;()</span><br><span class="line">    <span class="keyword">return</span> out</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">run2</span><span class="params">(a ...<span class="keyword">int</span>)</span> &lt;-<span class="title">chan</span> <span class="title">int</span></span> &#123;</span><br><span class="line">    out := <span class="built_in">make</span>(<span class="keyword">chan</span> <span class="keyword">int</span>)</span><br><span class="line">    <span class="keyword">go</span> <span class="function"><span class="keyword">func</span><span class="params">()</span></span> &#123;</span><br><span class="line"></span><br><span class="line">        sort.Ints(a)</span><br><span class="line"></span><br><span class="line">        time.Sleep(time.Second * <span class="number">2</span>)</span><br><span class="line"></span><br><span class="line">        <span class="keyword">for</span> _, v := <span class="keyword">range</span> a &#123;</span><br><span class="line">            out &lt;- v</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        <span class="built_in">close</span>(out)</span><br><span class="line">    &#125;()</span><br><span class="line">    <span class="keyword">return</span> out</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h2 id="说明"><a href="#说明" class="headerlink" title="说明"></a>说明</h2><blockquote>
+<p>我们可以将每个<code>run</code>的实现封装为<code>promise.New</code>的函数</p>
+<p>上述逻辑，可以再使用<code>promise.All</code>的函数实现</p>
+<p>GO 原生支持异步，用不着 promise，这完全是画蛇添足</p>
+<p>但是这个主要是想针对多任务并行处理且同时结束的时机控制，加深对于<code>goroutine</code>和<code>channel</code>的理解吧</p>
+</blockquote>
+
+      
+    </div>
+    <footer class="entry-meta entry-footer">
+      
+	<span class="ico-folder"></span>
+    <a class="article-category-link" href="/categories/%E6%9C%8D%E5%8A%A1%E7%AB%AF/">服务端</a>
+
+      
+  <span class="ico-tags"></span>
+  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/go/" rel="tag">go</a></li></ul>
+
+      
+    </footer>
+    <hr class="entry-footer-hr">
+  </div>
+  
+</article>
+
+<!-- Table of Contents -->
+
+  
+    <article id="post-go/递归整理树形结构"  class="article article-type-post" itemscope itemprop="blogPost" >
+  <div id="articleInner" class="clearfix post-1016 post type-post status-publish format-standard has-post-thumbnail hentry category-template-2 category-uncategorized tag-codex tag-edge-case tag-featured-image tag-image tag-template">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 class="thumb" itemprop="name">
+      <a class="article-title" href="/2022/05/13/go/%E9%80%92%E5%BD%92%E6%95%B4%E7%90%86%E6%A0%91%E5%BD%A2%E7%BB%93%E6%9E%84/">go语言实现递归，扁平转为树形，同时添加层级标识</a>
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-meta">
+      
+	<a href="/2022/05/13/go/%E9%80%92%E5%BD%92%E6%95%B4%E7%90%86%E6%A0%91%E5%BD%A2%E7%BB%93%E6%9E%84/" class="article-date">
+	  <time datetime="2022-05-13T07:07:18.470Z" itemprop="datePublished">五月 13, 2022</time>
+	</a>
+
+      
+	<span class="ico-folder"></span>
+    <a class="article-category-link" href="/categories/%E6%9C%8D%E5%8A%A1%E7%AB%AF/">服务端</a>
+ 
+      
+    </div>
+    <div class="article-entry" itemprop="articleBody">
+      
+        <h2 id="原始数据结构"><a href="#原始数据结构" class="headerlink" title="原始数据结构"></a>原始数据结构</h2><figure class="highlight json"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br></pre></td><td class="code"><pre><span class="line">[</span><br><span class="line">  &#123;</span><br><span class="line">    <span class="attr">&quot;id&quot;</span>: <span class="string">&quot;1&quot;</span>,</span><br><span class="line">    <span class="attr">&quot;pid&quot;</span>: <span class="string">&quot;0&quot;</span></span><br><span class="line">  &#125;,</span><br><span class="line">  &#123;</span><br><span class="line">    <span class="attr">&quot;id&quot;</span>: <span class="string">&quot;2&quot;</span>,</span><br><span class="line">    <span class="attr">&quot;pid&quot;</span>: <span class="string">&quot;1&quot;</span></span><br><span class="line">  &#125;,</span><br><span class="line">  &#123;</span><br><span class="line">    <span class="attr">&quot;id&quot;</span>: <span class="string">&quot;3&quot;</span>,</span><br><span class="line">    <span class="attr">&quot;pid&quot;</span>: <span class="string">&quot;1&quot;</span></span><br><span class="line">  &#125;,</span><br><span class="line">  &#123;</span><br><span class="line">    <span class="attr">&quot;id&quot;</span>: <span class="string">&quot;4&quot;</span>,</span><br><span class="line">    <span class="attr">&quot;pid&quot;</span>: <span class="string">&quot;0&quot;</span></span><br><span class="line">  &#125;,</span><br><span class="line">  &#123;</span><br><span class="line">    <span class="attr">&quot;id&quot;</span>: <span class="string">&quot;5&quot;</span>,</span><br><span class="line">    <span class="attr">&quot;pid&quot;</span>: <span class="string">&quot;4&quot;</span></span><br><span class="line">  &#125;,</span><br><span class="line">  &#123;</span><br><span class="line">    <span class="attr">&quot;id&quot;</span>: <span class="string">&quot;6&quot;</span>,</span><br><span class="line">    <span class="attr">&quot;pid&quot;</span>: <span class="string">&quot;4&quot;</span></span><br><span class="line">  &#125;,</span><br><span class="line">  &#123;</span><br><span class="line">    <span class="attr">&quot;id&quot;</span>: <span class="string">&quot;7&quot;</span>,</span><br><span class="line">    <span class="attr">&quot;pid&quot;</span>: <span class="string">&quot;3&quot;</span></span><br><span class="line">  &#125;,</span><br><span class="line">  &#123;</span><br><span class="line">    <span class="attr">&quot;id&quot;</span>: <span class="string">&quot;8&quot;</span>,</span><br><span class="line">    <span class="attr">&quot;pid&quot;</span>: <span class="string">&quot;3&quot;</span></span><br><span class="line">  &#125;</span><br><span class="line">]</span><br></pre></td></tr></table></figure>
+<h2 id="目标数据结构"><a href="#目标数据结构" class="headerlink" title="目标数据结构"></a>目标数据结构</h2><figure class="highlight json"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br></pre></td><td class="code"><pre><span class="line">[</span><br><span class="line">  &#123;</span><br><span class="line">    <span class="attr">&quot;id&quot;</span>: <span class="string">&quot;1&quot;</span>,</span><br><span class="line">    <span class="attr">&quot;pid&quot;</span>: <span class="string">&quot;0&quot;</span>,</span><br><span class="line">    <span class="attr">&quot;level&quot;</span>: <span class="number">0</span>,</span><br><span class="line">    <span class="attr">&quot;children&quot;</span>: [</span><br><span class="line">      &#123;</span><br><span class="line">        <span class="attr">&quot;id&quot;</span>: <span class="string">&quot;2&quot;</span>,</span><br><span class="line">        <span class="attr">&quot;pid&quot;</span>: <span class="string">&quot;1&quot;</span>,</span><br><span class="line">        <span class="attr">&quot;level&quot;</span>: <span class="number">1</span></span><br><span class="line">      &#125;,</span><br><span class="line">      &#123;</span><br><span class="line">        <span class="attr">&quot;id&quot;</span>: <span class="string">&quot;3&quot;</span>,</span><br><span class="line">        <span class="attr">&quot;pid&quot;</span>: <span class="string">&quot;1&quot;</span>,</span><br><span class="line">        <span class="attr">&quot;level&quot;</span>: <span class="number">1</span>,</span><br><span class="line">        <span class="attr">&quot;children&quot;</span>: [</span><br><span class="line">          &#123;</span><br><span class="line">            <span class="attr">&quot;id&quot;</span>: <span class="string">&quot;7&quot;</span>,</span><br><span class="line">            <span class="attr">&quot;pid&quot;</span>: <span class="string">&quot;3&quot;</span>,</span><br><span class="line">            <span class="attr">&quot;level&quot;</span>: <span class="number">2</span></span><br><span class="line">          &#125;,</span><br><span class="line">          &#123;</span><br><span class="line">            <span class="attr">&quot;id&quot;</span>: <span class="string">&quot;8&quot;</span>,</span><br><span class="line">            <span class="attr">&quot;pid&quot;</span>: <span class="string">&quot;3&quot;</span>,</span><br><span class="line">            <span class="attr">&quot;level&quot;</span>: <span class="number">2</span></span><br><span class="line">          &#125;</span><br><span class="line">        ]</span><br><span class="line">      &#125;</span><br><span class="line">    ]</span><br><span class="line">  &#125;,</span><br><span class="line">  &#123;</span><br><span class="line">    <span class="attr">&quot;id&quot;</span>: <span class="string">&quot;4&quot;</span>,</span><br><span class="line">    <span class="attr">&quot;pid&quot;</span>: <span class="string">&quot;0&quot;</span>,</span><br><span class="line">    <span class="attr">&quot;level&quot;</span>: <span class="number">0</span>,</span><br><span class="line">    <span class="attr">&quot;children&quot;</span>: [</span><br><span class="line">      &#123;</span><br><span class="line">        <span class="attr">&quot;id&quot;</span>: <span class="string">&quot;5&quot;</span>,</span><br><span class="line">        <span class="attr">&quot;pid&quot;</span>: <span class="string">&quot;4&quot;</span>,</span><br><span class="line">        <span class="attr">&quot;level&quot;</span>: <span class="number">1</span></span><br><span class="line">      &#125;,</span><br><span class="line">      &#123;</span><br><span class="line">        <span class="attr">&quot;id&quot;</span>: <span class="string">&quot;6&quot;</span>,</span><br><span class="line">        <span class="attr">&quot;pid&quot;</span>: <span class="string">&quot;4&quot;</span>,</span><br><span class="line">        <span class="attr">&quot;level&quot;</span>: <span class="number">1</span></span><br><span class="line">      &#125;</span><br><span class="line">    ]</span><br><span class="line">  &#125;</span><br><span class="line">]</span><br></pre></td></tr></table></figure>
+<h2 id="go-实现的核心函数"><a href="#go-实现的核心函数" class="headerlink" title="go 实现的核心函数"></a>go 实现的核心函数</h2><blockquote>
+<p>指定<code>pid</code>根节点和<code>level</code>根层标识</p>
+</blockquote>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">handle</span><span class="params">(pid <span class="keyword">string</span>, level <span class="keyword">int8</span>)</span> []<span class="title">d</span></span> &#123;</span><br><span class="line">    <span class="keyword">var</span> tree []d</span><br><span class="line">    <span class="keyword">for</span> _, v := <span class="keyword">range</span> data &#123;</span><br><span class="line">        <span class="keyword">if</span> v.Pid == pid &#123;</span><br><span class="line">            <span class="keyword">var</span> children []d</span><br><span class="line">            children = <span class="built_in">append</span>(children, handle(v.ID, level+<span class="number">1</span>)...)</span><br><span class="line">            tree = <span class="built_in">append</span>(tree, d&#123;</span><br><span class="line">                Level:    level,</span><br><span class="line">                ID:       v.ID,</span><br><span class="line">                Pid:      v.Pid,</span><br><span class="line">                Children: children,</span><br><span class="line">            &#125;)</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> tree</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h2 id="完整代码，粘贴即可运行"><a href="#完整代码，粘贴即可运行" class="headerlink" title="完整代码，粘贴即可运行"></a>完整代码，粘贴即可运行</h2><figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">package</span> main</span><br><span class="line"></span><br><span class="line"><span class="keyword">import</span> (</span><br><span class="line">    <span class="string">&quot;bytes&quot;</span></span><br><span class="line">    <span class="string">&quot;encoding/json&quot;</span></span><br><span class="line">    <span class="string">&quot;log&quot;</span></span><br><span class="line">    <span class="string">&quot;os&quot;</span></span><br><span class="line">)</span><br><span class="line"></span><br><span class="line"><span class="keyword">type</span> dataSource <span class="keyword">struct</span> &#123;</span><br><span class="line">    ID  <span class="keyword">string</span> <span class="string">`json:&quot;id&quot;`</span></span><br><span class="line">    Pid <span class="keyword">string</span> <span class="string">`json:&quot;pid&quot;`</span></span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">type</span> d <span class="keyword">struct</span> &#123;</span><br><span class="line">    Level    <span class="keyword">int8</span>   <span class="string">`json:&quot;level&quot;`</span></span><br><span class="line">    ID       <span class="keyword">string</span> <span class="string">`json:&quot;id&quot;`</span></span><br><span class="line">    Pid      <span class="keyword">string</span> <span class="string">`json:&quot;pid&quot;`</span></span><br><span class="line">    Children []d    <span class="string">`json:&quot;children&quot;`</span></span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">var</span> data = []*dataSource&#123;</span><br><span class="line">    &#123;</span><br><span class="line">        ID:  <span class="string">&quot;1&quot;</span>,</span><br><span class="line">        Pid: <span class="string">&quot;0&quot;</span>,</span><br><span class="line">    &#125;,</span><br><span class="line">    &#123;</span><br><span class="line">        ID:  <span class="string">&quot;2&quot;</span>,</span><br><span class="line">        Pid: <span class="string">&quot;1&quot;</span>,</span><br><span class="line">    &#125;,</span><br><span class="line">    &#123;</span><br><span class="line">        ID:  <span class="string">&quot;3&quot;</span>,</span><br><span class="line">        Pid: <span class="string">&quot;1&quot;</span>,</span><br><span class="line">    &#125;, &#123;</span><br><span class="line">        ID:  <span class="string">&quot;4&quot;</span>,</span><br><span class="line">        Pid: <span class="string">&quot;0&quot;</span>,</span><br><span class="line">    &#125;, &#123;</span><br><span class="line">        ID:  <span class="string">&quot;5&quot;</span>,</span><br><span class="line">        Pid: <span class="string">&quot;4&quot;</span>,</span><br><span class="line">    &#125;,</span><br><span class="line">    &#123;</span><br><span class="line">        ID:  <span class="string">&quot;6&quot;</span>,</span><br><span class="line">        Pid: <span class="string">&quot;4&quot;</span>,</span><br><span class="line">    &#125;,</span><br><span class="line">    &#123;</span><br><span class="line">        ID:  <span class="string">&quot;7&quot;</span>,</span><br><span class="line">        Pid: <span class="string">&quot;3&quot;</span>,</span><br><span class="line">    &#125;,</span><br><span class="line">    &#123;</span><br><span class="line">        ID:  <span class="string">&quot;8&quot;</span>,</span><br><span class="line">        Pid: <span class="string">&quot;3&quot;</span>,</span><br><span class="line">    &#125;,</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">handle</span><span class="params">(pid <span class="keyword">string</span>, level <span class="keyword">int8</span>)</span> []<span class="title">d</span></span> &#123;</span><br><span class="line">    <span class="keyword">var</span> tree []d</span><br><span class="line">    <span class="keyword">for</span> _, v := <span class="keyword">range</span> data &#123;</span><br><span class="line">        <span class="keyword">if</span> v.Pid == pid &#123;</span><br><span class="line">            <span class="keyword">var</span> children []d</span><br><span class="line">            children = <span class="built_in">append</span>(children, handle(v.ID, level+<span class="number">1</span>)...)</span><br><span class="line">            tree = <span class="built_in">append</span>(tree, d&#123;</span><br><span class="line">                Level:    level,</span><br><span class="line">                ID:       v.ID,</span><br><span class="line">                Pid:      v.Pid,</span><br><span class="line">                Children: children,</span><br><span class="line">            &#125;)</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> tree</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">main</span><span class="params">()</span></span> &#123;</span><br><span class="line">    root := handle(<span class="string">&quot;0&quot;</span>, <span class="number">0</span>)</span><br><span class="line">    b, _ := json.Marshal(root)</span><br><span class="line"></span><br><span class="line">    <span class="keyword">var</span> out bytes.Buffer</span><br><span class="line">    err := json.Indent(&amp;out, b, <span class="string">&quot;&quot;</span>, <span class="string">&quot;\t&quot;</span>)</span><br><span class="line"></span><br><span class="line">    <span class="keyword">if</span> err != <span class="literal">nil</span> &#123;</span><br><span class="line">        log.Fatalln(err)</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    out.WriteTo(os.Stdout)</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h2 id="输出结果"><a href="#输出结果" class="headerlink" title="输出结果"></a>输出结果</h2><figure class="highlight json"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br></pre></td><td class="code"><pre><span class="line">[</span><br><span class="line">  &#123;</span><br><span class="line">    <span class="attr">&quot;level&quot;</span>: <span class="number">0</span>,</span><br><span class="line">    <span class="attr">&quot;id&quot;</span>: <span class="string">&quot;1&quot;</span>,</span><br><span class="line">    <span class="attr">&quot;pid&quot;</span>: <span class="string">&quot;0&quot;</span>,</span><br><span class="line">    <span class="attr">&quot;children&quot;</span>: [</span><br><span class="line">      &#123;</span><br><span class="line">        <span class="attr">&quot;level&quot;</span>: <span class="number">1</span>,</span><br><span class="line">        <span class="attr">&quot;id&quot;</span>: <span class="string">&quot;2&quot;</span>,</span><br><span class="line">        <span class="attr">&quot;pid&quot;</span>: <span class="string">&quot;1&quot;</span>,</span><br><span class="line">        <span class="attr">&quot;children&quot;</span>: <span class="literal">null</span></span><br><span class="line">      &#125;,</span><br><span class="line">      &#123;</span><br><span class="line">        <span class="attr">&quot;level&quot;</span>: <span class="number">1</span>,</span><br><span class="line">        <span class="attr">&quot;id&quot;</span>: <span class="string">&quot;3&quot;</span>,</span><br><span class="line">        <span class="attr">&quot;pid&quot;</span>: <span class="string">&quot;1&quot;</span>,</span><br><span class="line">        <span class="attr">&quot;children&quot;</span>: [</span><br><span class="line">          &#123;</span><br><span class="line">            <span class="attr">&quot;level&quot;</span>: <span class="number">2</span>,</span><br><span class="line">            <span class="attr">&quot;id&quot;</span>: <span class="string">&quot;7&quot;</span>,</span><br><span class="line">            <span class="attr">&quot;pid&quot;</span>: <span class="string">&quot;3&quot;</span>,</span><br><span class="line">            <span class="attr">&quot;children&quot;</span>: <span class="literal">null</span></span><br><span class="line">          &#125;,</span><br><span class="line">          &#123;</span><br><span class="line">            <span class="attr">&quot;level&quot;</span>: <span class="number">2</span>,</span><br><span class="line">            <span class="attr">&quot;id&quot;</span>: <span class="string">&quot;8&quot;</span>,</span><br><span class="line">            <span class="attr">&quot;pid&quot;</span>: <span class="string">&quot;3&quot;</span>,</span><br><span class="line">            <span class="attr">&quot;children&quot;</span>: <span class="literal">null</span></span><br><span class="line">          &#125;</span><br><span class="line">        ]</span><br><span class="line">      &#125;</span><br><span class="line">    ]</span><br><span class="line">  &#125;,</span><br><span class="line">  &#123;</span><br><span class="line">    <span class="attr">&quot;level&quot;</span>: <span class="number">0</span>,</span><br><span class="line">    <span class="attr">&quot;id&quot;</span>: <span class="string">&quot;4&quot;</span>,</span><br><span class="line">    <span class="attr">&quot;pid&quot;</span>: <span class="string">&quot;0&quot;</span>,</span><br><span class="line">    <span class="attr">&quot;children&quot;</span>: [</span><br><span class="line">      &#123;</span><br><span class="line">        <span class="attr">&quot;level&quot;</span>: <span class="number">1</span>,</span><br><span class="line">        <span class="attr">&quot;id&quot;</span>: <span class="string">&quot;5&quot;</span>,</span><br><span class="line">        <span class="attr">&quot;pid&quot;</span>: <span class="string">&quot;4&quot;</span>,</span><br><span class="line">        <span class="attr">&quot;children&quot;</span>: <span class="literal">null</span></span><br><span class="line">      &#125;,</span><br><span class="line">      &#123;</span><br><span class="line">        <span class="attr">&quot;level&quot;</span>: <span class="number">1</span>,</span><br><span class="line">        <span class="attr">&quot;id&quot;</span>: <span class="string">&quot;6&quot;</span>,</span><br><span class="line">        <span class="attr">&quot;pid&quot;</span>: <span class="string">&quot;4&quot;</span>,</span><br><span class="line">        <span class="attr">&quot;children&quot;</span>: <span class="literal">null</span></span><br><span class="line">      &#125;</span><br><span class="line">    ]</span><br><span class="line">  &#125;</span><br><span class="line">]</span><br></pre></td></tr></table></figure>
+
+      
+    </div>
+    <footer class="entry-meta entry-footer">
+      
+	<span class="ico-folder"></span>
+    <a class="article-category-link" href="/categories/%E6%9C%8D%E5%8A%A1%E7%AB%AF/">服务端</a>
+
+      
+  <span class="ico-tags"></span>
+  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/go/" rel="tag">go</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/%E5%90%8E%E7%AB%AF/" rel="tag">后端</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/%E7%AE%97%E6%B3%95/" rel="tag">算法</a></li></ul>
+
+      
+    </footer>
+    <hr class="entry-footer-hr">
+  </div>
+  
+</article>
+
+<!-- Table of Contents -->
+
+  
+    <article id="post-front/monaco"  class="article article-type-post" itemscope itemprop="blogPost" >
+  <div id="articleInner" class="clearfix post-1016 post type-post status-publish format-standard has-post-thumbnail hentry category-template-2 category-uncategorized tag-codex tag-edge-case tag-featured-image tag-image tag-template">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 class="thumb" itemprop="name">
+      <a class="article-title" href="/2022/05/13/front/monaco/">monaco-editor</a>
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-meta">
+      
+	<a href="/2022/05/13/front/monaco/" class="article-date">
+	  <time datetime="2022-05-13T07:07:18.469Z" itemprop="datePublished">五月 13, 2022</time>
+	</a>
+
+      
+	<span class="ico-folder"></span>
+    <a class="article-category-link" href="/categories/%E5%A4%A7%E5%89%8D%E7%AB%AF/">大前端</a>
+ 
+      
+    </div>
+    <div class="article-entry" itemprop="articleBody">
+      
+        <blockquote>
+<p>关于编辑器的使用，网上一搜一大堆，这里不再赘述</p>
+<p>这里主要介绍编辑器使用时，遇到的关键问题和痛点</p>
+</blockquote>
+<h2 id="语法解释器"><a href="#语法解释器" class="headerlink" title="语法解释器"></a>语法解释器</h2><p>需要使用<code>webpack</code>插件<strong>monaco-editor-webpack-plugin</strong><br>全局注册<code>window.MonacoEnvironment</code>对象，供<code>monaco</code>编辑器内核调度<br>根据当前编辑器的语言模式，读取对应的语法解释器worker</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">const</span> MonacoWebpackPlugin = <span class="built_in">require</span>(<span class="string">&#x27;monaco-editor-webpack-plugin&#x27;</span>);</span><br><span class="line"><span class="keyword">new</span> MonacoWebpackPlugin(&#123;</span><br><span class="line">    <span class="comment">// 指定编辑器默认加载的语言</span></span><br><span class="line">    languages: [<span class="string">&#x27;json&#x27;</span>, <span class="string">&#x27;javascript&#x27;</span>, <span class="string">&#x27;typescript&#x27;</span>, <span class="string">&#x27;yaml&#x27;</span>],</span><br><span class="line">    <span class="comment">// 自定义语言解释器worker</span></span><br><span class="line">    customLanguages: [</span><br><span class="line">        &#123;</span><br><span class="line">            label: <span class="string">&#x27;yaml&#x27;</span>,</span><br><span class="line">            <span class="comment">// <span class="doctag">TODO:</span> restore once https://github.com/pengx17/monaco-yaml/pull/48 is merged</span></span><br><span class="line">            entry: <span class="string">&#x27;monaco-yaml/lib/esm/monaco.contribution&#x27;</span>,</span><br><span class="line">            worker: &#123;</span><br><span class="line">                id: <span class="string">&#x27;vs/language/yaml/yamlWorker&#x27;</span>,</span><br><span class="line">                <span class="comment">// <span class="doctag">TODO:</span> restore once https://github.com/pengx17/monaco-yaml/pull/48 is merged</span></span><br><span class="line">                entry: <span class="string">&#x27;monaco-yaml/lib/esm/yaml.worker.js&#x27;</span></span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">    ]</span><br><span class="line">&#125;)</span><br></pre></td></tr></table></figure>
+<h2 id="语法提示（低代码编辑使用）"><a href="#语法提示（低代码编辑使用）" class="headerlink" title="语法提示（低代码编辑使用）"></a>语法提示（低代码编辑使用）</h2><p><a target="_blank" rel="noopener" href="https://www.javaroad.cn/questions/17664#">参考</a></p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// validation settings</span></span><br><span class="line">monaco.languages.typescript.javascriptDefaults.setDiagnosticsOptions(&#123;</span><br><span class="line">  noSemanticValidation: <span class="literal">true</span>,</span><br><span class="line">  noSyntaxValidation: <span class="literal">false</span></span><br><span class="line">&#125;);</span><br><span class="line"></span><br><span class="line"><span class="comment">// compiler options</span></span><br><span class="line">monaco.languages.typescript.javascriptDefaults.setCompilerOptions(&#123;</span><br><span class="line">  target: monaco.languages.typescript.ScriptTarget.ES2016,</span><br><span class="line">  allowNonTsExtensions: <span class="literal">true</span>,</span><br><span class="line">  allowJs: <span class="literal">true</span></span><br><span class="line">&#125;);</span><br><span class="line"></span><br><span class="line"><span class="comment">// extra libraries</span></span><br><span class="line">monaco.languages.typescript.javascriptDefaults.addExtraLib(<span class="string">`</span></span><br><span class="line"><span class="string">declare class getValue &#123;</span></span><br><span class="line"><span class="string">    /**</span></span><br><span class="line"><span class="string">    * 这是什么</span></span><br><span class="line"><span class="string">    */</span></span><br><span class="line"><span class="string">    antd: &#123;</span></span><br><span class="line"><span class="string">        message:&#123;</span></span><br><span class="line"><span class="string">            success:()=&gt;void;</span></span><br><span class="line"><span class="string">        &#125;</span></span><br><span class="line"><span class="string">    &#125;,</span></span><br><span class="line"><span class="string">&#125;</span></span><br><span class="line"><span class="string">`</span>,</span><br><span class="line">  <span class="string">&#x27;filename/facts.d.ts&#x27;</span></span><br><span class="line">);</span><br></pre></td></tr></table></figure>
+<blockquote>
+<p>代码编辑时，需要加上这个注释</p>
+</blockquote>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * <span class="doctag">@param <span class="type">&#123;getValue&#125;</span> <span class="variable">event</span></span></span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">getValue</span>(<span class="params">event</span>) </span>&#123;</span><br><span class="line">    event.antd.message</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+      
+    </div>
+    <footer class="entry-meta entry-footer">
+      
+	<span class="ico-folder"></span>
+    <a class="article-category-link" href="/categories/%E5%A4%A7%E5%89%8D%E7%AB%AF/">大前端</a>
+
+      
+      
+    </footer>
+    <hr class="entry-footer-hr">
+  </div>
+  
+</article>
+
+<!-- Table of Contents -->
+
+  
     <article id="post-front/虚拟dom"  class="article article-type-post" itemscope itemprop="blogPost" >
   <div id="articleInner" class="clearfix post-1016 post type-post status-publish format-standard has-post-thumbnail hentry category-template-2 category-uncategorized tag-codex tag-edge-case tag-featured-image tag-image tag-template">
     
@@ -181,7 +684,7 @@
         
   
     <h1 class="thumb" itemprop="name">
-      <a class="article-title" href="/2021/09/08/front/%E8%99%9A%E6%8B%9Fdom/">虚拟dom和dom diff</a>
+      <a class="article-title" href="/2022/05/13/front/%E8%99%9A%E6%8B%9Fdom/">虚拟dom和dom diff</a>
     </h1>
   
 
@@ -189,8 +692,8 @@
     
     <div class="article-meta">
       
-	<a href="/2021/09/08/front/%E8%99%9A%E6%8B%9Fdom/" class="article-date">
-	  <time datetime="2021-09-07T16:11:09.863Z" itemprop="datePublished">九月 8, 2021</time>
+	<a href="/2022/05/13/front/%E8%99%9A%E6%8B%9Fdom/" class="article-date">
+	  <time datetime="2022-05-13T07:07:18.469Z" itemprop="datePublished">五月 13, 2022</time>
 	</a>
 
       
@@ -242,7 +745,7 @@
 <!-- Table of Contents -->
 
   
-    <article id="post-front/Redux&amp;TypeScript最佳实践"  class="article article-type-post" itemscope itemprop="blogPost" >
+    <article id="post-front/TypeScript泛型"  class="article article-type-post" itemscope itemprop="blogPost" >
   <div id="articleInner" class="clearfix post-1016 post type-post status-publish format-standard has-post-thumbnail hentry category-template-2 category-uncategorized tag-codex tag-edge-case tag-featured-image tag-image tag-template">
     
     
@@ -250,7 +753,7 @@
         
   
     <h1 class="thumb" itemprop="name">
-      <a class="article-title" href="/2021/08/13/front/Redux&TypeScript%E6%9C%80%E4%BD%B3%E5%AE%9E%E8%B7%B5/">Redux + TypeScript最佳实践</a>
+      <a class="article-title" href="/2022/05/13/front/TypeScript%E6%B3%9B%E5%9E%8B/">泛型典型示例</a>
     </h1>
   
 
@@ -258,8 +761,8 @@
     
     <div class="article-meta">
       
-	<a href="/2021/08/13/front/Redux&TypeScript%E6%9C%80%E4%BD%B3%E5%AE%9E%E8%B7%B5/" class="article-date">
-	  <time datetime="2021-08-13T00:46:22.272Z" itemprop="datePublished">八月 13, 2021</time>
+	<a href="/2022/05/13/front/TypeScript%E6%B3%9B%E5%9E%8B/" class="article-date">
+	  <time datetime="2022-05-13T07:07:18.468Z" itemprop="datePublished">五月 13, 2022</time>
 	</a>
 
       
@@ -270,146 +773,15 @@
     </div>
     <div class="article-entry" itemprop="articleBody">
       
-        
-
-          
-          <div class="entry-summary">
-          这里简单的介绍了redux结合typescript的使用技巧，方便在开发的时候，利用typescript的特点，对数据类型进行校验和提示
-
-        
-          <p class="article-more-link">
-            <a href="/2021/08/13/front/Redux&TypeScript%E6%9C%80%E4%BD%B3%E5%AE%9E%E8%B7%B5/#more">阅读全文</a>
-          </p>
-        </div>
-      
-    </div>
-    <footer class="entry-meta entry-footer">
-      
-	<span class="ico-folder"></span>
-    <a class="article-category-link" href="/categories/%E5%A4%A7%E5%89%8D%E7%AB%AF/">大前端</a>
-
-      
-  <span class="ico-tags"></span>
-  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/redux/" rel="tag">redux</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/typescript/" rel="tag">typescript</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/web/" rel="tag">web</a></li></ul>
-
-      
-    </footer>
-    <hr class="entry-footer-hr">
-  </div>
-  
-</article>
-
-<!-- Table of Contents -->
-
-  
-    <article id="post-front/SEO策略之页面直出"  class="article article-type-post" itemscope itemprop="blogPost" >
-  <div id="articleInner" class="clearfix post-1016 post type-post status-publish format-standard has-post-thumbnail hentry category-template-2 category-uncategorized tag-codex tag-edge-case tag-featured-image tag-image tag-template">
-    
-    
-      <header class="article-header">
-        
-  
-    <h1 class="thumb" itemprop="name">
-      <a class="article-title" href="/2021/05/26/front/SEO%E7%AD%96%E7%95%A5%E4%B9%8B%E9%A1%B5%E9%9D%A2%E7%9B%B4%E5%87%BA/">SEO策略之页面直出</a>
-    </h1>
-  
-
-      </header>
-    
-    <div class="article-meta">
-      
-	<a href="/2021/05/26/front/SEO%E7%AD%96%E7%95%A5%E4%B9%8B%E9%A1%B5%E9%9D%A2%E7%9B%B4%E5%87%BA/" class="article-date">
-	  <time datetime="2021-05-25T16:27:59.656Z" itemprop="datePublished">五月 26, 2021</time>
-	</a>
-
-      
-	<span class="ico-folder"></span>
-    <a class="article-category-link" href="/categories/%E5%A4%A7%E5%89%8D%E7%AB%AF/">大前端</a>
- 
-      
-    </div>
-    <div class="article-entry" itemprop="articleBody">
-      
-        
-
-          
-          <div class="entry-summary">
-          
-通过 React 在 Node 端做页面直出时，服务器负载是我们首先需要去直面的问题，先看一下流程图，接下来会详细解读
-
-
-        
-          <p class="article-more-link">
-            <a href="/2021/05/26/front/SEO%E7%AD%96%E7%95%A5%E4%B9%8B%E9%A1%B5%E9%9D%A2%E7%9B%B4%E5%87%BA/#more">阅读全文</a>
-          </p>
-        </div>
-      
-    </div>
-    <footer class="entry-meta entry-footer">
-      
-	<span class="ico-folder"></span>
-    <a class="article-category-link" href="/categories/%E5%A4%A7%E5%89%8D%E7%AB%AF/">大前端</a>
-
-      
-  <span class="ico-tags"></span>
-  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/ssr/" rel="tag">ssr</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/web/" rel="tag">web</a></li></ul>
-
-      
-    </footer>
-    <hr class="entry-footer-hr">
-  </div>
-  
-</article>
-
-<!-- Table of Contents -->
-
-  
-    <article id="post-electron/加密"  class="article article-type-post" itemscope itemprop="blogPost" >
-  <div id="articleInner" class="clearfix post-1016 post type-post status-publish format-standard has-post-thumbnail hentry category-template-2 category-uncategorized tag-codex tag-edge-case tag-featured-image tag-image tag-template">
-    
-    
-      <header class="article-header">
-        
-  
-    <h1 class="thumb" itemprop="name">
-      <a class="article-title" href="/2021/05/25/electron/%E5%8A%A0%E5%AF%86/">聊聊electron代码加密</a>
-    </h1>
-  
-
-      </header>
-    
-    <div class="article-meta">
-      
-	<a href="/2021/05/25/electron/%E5%8A%A0%E5%AF%86/" class="article-date">
-	  <time datetime="2021-05-25T15:45:20.487Z" itemprop="datePublished">五月 25, 2021</time>
-	</a>
-
-      
-	<span class="ico-folder"></span>
-    <a class="article-category-link" href="/categories/%E5%A4%A7%E5%89%8D%E7%AB%AF/">大前端</a>
- 
-      
-    </div>
-    <div class="article-entry" itemprop="articleBody">
-      
-        <blockquote>
-<p>electron技术就是基于开源的<code>chromium</code>内核，实现了跨端的桌面端开发框架，所以其常用的业务开发脚本就是js代码了</p>
-<p>那么在打包后，这些js代码虽然会经过压缩混淆编译等处理，但是仍然可以破解出来</p>
-<p>所以就需要一种技术，把js代码转成二进制文件</p>
-<p>如果可以的话，还需要对这些文件进行加密，绑定本地机器的mac地址，保证了激活唯一性</p>
-<p>接下来，将聊聊怎么做这些事情</p>
-</blockquote>
-<h2 id="bytenode"><a href="#bytenode" class="headerlink" title="bytenode"></a>bytenode</h2><p>通过<code>bytenode</code>将所有的js文件编译为字节码</p>
-<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">const</span> bytenode = <span class="built_in">window</span>.require(<span class="string">&#x27;bytenode&#x27;</span>);</span><br><span class="line"><span class="keyword">await</span> bytenode.compileFile(&#123;</span><br><span class="line">    filename: <span class="string">&quot;指定js文件路径名称&quot;</span>,</span><br><span class="line">    output: <span class="string">&quot;输出jsc的目录&quot;</span></span><br><span class="line">&#125;);</span><br></pre></td></tr></table></figure>
-<h2 id="webpack插件"><a href="#webpack插件" class="headerlink" title="webpack插件"></a>webpack插件</h2><p>用来修改按需加载资源的方式，不再加载js资源了</p>
-<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">const</span> pluginName = <span class="string">&#x27;ChangeEntryWebpackPlugin&#x27;</span>;</span><br><span class="line"><span class="keyword">const</span> webpack = <span class="built_in">require</span>(<span class="string">&#x27;webpack&#x27;</span>);</span><br><span class="line"></span><br><span class="line"><span class="keyword">const</span> &#123; Template &#125; = webpack;</span><br><span class="line"></span><br><span class="line"><span class="built_in">module</span>.exports = <span class="class"><span class="keyword">class</span> <span class="title">Plugin</span> </span>&#123;</span><br><span class="line">  apply(compiler) &#123;</span><br><span class="line">    compiler.hooks.thisCompilation.tap(pluginName, <span class="function">(<span class="params">compilation</span>) =&gt;</span> &#123;</span><br><span class="line">      <span class="keyword">const</span> &#123; mainTemplate &#125; = compilation;</span><br><span class="line">      mainTemplate.hooks.requireEnsure.tap(pluginName, <span class="function">(<span class="params">source</span>) =&gt;</span> &#123;</span><br><span class="line">        <span class="keyword">return</span> Template.asString([</span><br><span class="line">          <span class="string">`if(!window.StartTest)&#123;`</span>,</span><br><span class="line">          Template.indent([</span><br><span class="line">            <span class="comment">// $&#123;pluginName&#125; jsc loaded`,</span></span><br><span class="line">            <span class="string">`var installedChunkData = installedChunks[chunkId];`</span>,</span><br><span class="line">            <span class="string">`if (installedChunkData !== 0) &#123;`</span>,</span><br><span class="line">            Template.indent([</span><br><span class="line">              <span class="string">`if (installedChunkData) &#123;`</span>,</span><br><span class="line">              Template.indent([<span class="string">`promises.push(installedChunkData[2]);`</span>]),</span><br><span class="line">              <span class="string">`&#125; else &#123;`</span>,</span><br><span class="line">              Template.indent([</span><br><span class="line">                <span class="string">`var src = jsonpScriptSrc(chunkId);`</span>,</span><br><span class="line">                <span class="string">`var name = src.replace(&quot;./scripts/&quot;,&quot;&quot;).replace(/\.js$/, &#x27;&#x27;);`</span>,</span><br><span class="line">                                <span class="comment">// 这里改为通过require jsc的方式加载每个bundle文件</span></span><br><span class="line">                                <span class="comment">// 这里的运行时在electron里面</span></span><br><span class="line">                <span class="string">`require(&quot;./&quot;+ name + &quot;.jsc&quot;);`</span>,</span><br><span class="line">                <span class="string">`installedChunks[chunkId] = undefined;`</span></span><br><span class="line">              ]),</span><br><span class="line">              <span class="string">`&#125;`</span></span><br><span class="line">            ]),</span><br><span class="line">            <span class="string">`&#125;`</span>,</span><br><span class="line">            <span class="string">`return Promise.all(promises);`</span></span><br><span class="line">          ]),</span><br><span class="line">          <span class="string">`&#125;`</span>,</span><br><span class="line">          source</span><br><span class="line">        ]);</span><br><span class="line">      &#125;);</span><br><span class="line">    &#125;);</span><br><span class="line">  &#125;</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
-<h2 id="步骤"><a href="#步骤" class="headerlink" title="步骤"></a>步骤</h2><ol>
-<li>先将前端单页项目，通过webpack编译后，生成js文件</li>
-<li>启动供编译jsc的electron，在该electron里面，将上一步生成的js文件，编译为jsc的字节码文件。在electron里面编译的目的，是要保证版本一致性，因为该jsc文件，最终也会打包到最后的electron的产物里面</li>
-<li>最后执行需要生成最终包的electron脚本</li>
-<li>运行时加载方式伪代码</li>
+        <h2 id="函数输入值类型和输出值类型，映射关系"><a href="#函数输入值类型和输出值类型，映射关系" class="headerlink" title="函数输入值类型和输出值类型，映射关系"></a>函数输入值类型和输出值类型，映射关系</h2><figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">f(<span class="string">&#x27;1&#x27;</span>) === <span class="number">1</span></span><br><span class="line"></span><br><span class="line">f(<span class="number">1</span>) === <span class="string">&#x27;1&#x27;</span></span><br></pre></td></tr></table></figure>
+<p>即函数<code>f</code></p>
+<ol>
+<li>接收<code>string</code>类型时，返回<code>number</code>类型</li>
+<li>接收<code>number</code>类型时，返回<code>string</code>类型</li>
 </ol>
-<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 这里使用的是基于award框架的项目示例</span></span><br><span class="line"><span class="keyword">import</span> * <span class="keyword">as</span> path <span class="keyword">from</span> <span class="string">&#x27;path&#x27;</span>;</span><br><span class="line"></span><br><span class="line"><span class="keyword">if</span> (<span class="built_in">document</span>.location.protocol === <span class="string">&#x27;file:&#x27;</span>) &#123;</span><br><span class="line">  <span class="keyword">if</span> (process.env.NODE_ENV === <span class="string">&#x27;production&#x27;</span> || process.env.NODE_ENV === <span class="string">&#x27;uat&#x27;</span>) &#123;</span><br><span class="line">    process.env.NODE_ENV = <span class="string">&#x27;production&#x27;</span>;</span><br><span class="line"></span><br><span class="line">    <span class="built_in">window</span>.onload = <span class="function"><span class="keyword">function</span> (<span class="params"></span>) </span>&#123;</span><br><span class="line">      <span class="keyword">const</span> award = <span class="built_in">document</span>.getElementById(<span class="string">&#x27;award&#x27;</span>);</span><br><span class="line">      <span class="keyword">if</span> (award) &#123;</span><br><span class="line">        <span class="comment">// 初始化第三方依赖资源</span></span><br><span class="line">        <span class="keyword">const</span> win = <span class="built_in">window</span> <span class="keyword">as</span> any;</span><br><span class="line">        win.React = <span class="built_in">require</span>(<span class="string">&#x27;react&#x27;</span>);</span><br><span class="line">        win.ReactDOM = <span class="built_in">require</span>(<span class="string">&#x27;react-dom&#x27;</span>);</span><br><span class="line">        win.moment = <span class="built_in">require</span>(<span class="string">&#x27;moment&#x27;</span>);</span><br><span class="line">        win.antd = <span class="built_in">require</span>(<span class="string">&#x27;antd&#x27;</span>);</span><br><span class="line">        win.__INITIAL_STATE__ = &#123; <span class="attr">award</span>: &#123;&#125; &#125;;</span><br><span class="line"></span><br><span class="line">        <span class="comment">// 加载核心的jsc资源</span></span><br><span class="line">        <span class="built_in">require</span>(<span class="string">&#x27;bytenode&#x27;</span>);</span><br><span class="line">        <span class="built_in">require</span>(path.join(__dirname, <span class="string">&#x27;assets/scripts/common.jsc&#x27;</span>));</span><br><span class="line">        <span class="built_in">require</span>(path.join(__dirname, <span class="string">&#x27;assets/scripts/manifest.jsc&#x27;</span>));</span><br><span class="line">        <span class="built_in">require</span>(path.join(__dirname, <span class="string">&#x27;assets/scripts/main.jsc&#x27;</span>));</span><br><span class="line">      &#125;</span><br><span class="line">    &#125;;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h3 id="方法一"><a href="#方法一" class="headerlink" title="方法一"></a>方法一</h3><figure class="highlight typescript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">f</span>&lt;<span class="title">T</span> <span class="title">extends</span> <span class="title">number</span> | <span class="title">string</span>&gt;(<span class="params"></span></span></span><br><span class="line"><span class="function"><span class="params">  p: T</span></span></span><br><span class="line"><span class="function"><span class="params"></span>): <span class="title">T</span> <span class="title">extends</span> <span class="title">number</span> ? <span class="title">string</span> : <span class="title">T</span> <span class="title">extends</span> <span class="title">string</span> ? <span class="title">number</span> : <span class="title">null</span></span>;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">f</span>(<span class="params">p</span>) </span>&#123;</span><br><span class="line">  <span class="keyword">let</span> result = <span class="literal">null</span>;</span><br><span class="line">  <span class="keyword">if</span> (<span class="keyword">typeof</span> p === <span class="string">&quot;string&quot;</span>) &#123;</span><br><span class="line">    <span class="comment">// 经过一段逻辑处理，返回了number类型</span></span><br><span class="line">    result = <span class="built_in">Number</span>(p);</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="keyword">if</span> (<span class="keyword">typeof</span> p === <span class="string">&quot;number&quot;</span>) &#123;</span><br><span class="line">    <span class="comment">// 经过一段逻辑处理，返回了string类型</span></span><br><span class="line">    result = <span class="built_in">String</span>(p);</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="keyword">return</span> result;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">const</span> res1 = f(<span class="string">&quot;1&quot;</span>);</span><br><span class="line"><span class="keyword">if</span> (res1 === <span class="number">1</span>) &#123;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">if</span> (res1 === <span class="string">&quot;1&quot;</span>) &#123;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">const</span> res2 = f(<span class="number">2</span>);</span><br><span class="line"><span class="keyword">if</span> (res2 === <span class="string">&quot;2&quot;</span>) &#123;</span><br><span class="line">&#125;</span><br><span class="line"><span class="keyword">if</span> (res2 === <span class="number">2</span>) &#123;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p><img src="/assets/images/post_imgs/ts1.gif" alt="查看类型提示示意图"></p>
+<h3 id="方法二"><a href="#方法二" class="headerlink" title="方法二"></a>方法二</h3><figure class="highlight typescript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 函数重载</span></span><br><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">f</span>(<span class="params">p:<span class="built_in">string</span></span>):<span class="title">number</span></span>;</span><br><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">f</span>(<span class="params">p:<span class="built_in">number</span></span>):<span class="title">string</span></span>;</span><br><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">f</span>(<span class="params">p:<span class="built_in">any</span></span>):<span class="title">any</span></span>;</span><br></pre></td></tr></table></figure>
       
     </div>
     <footer class="entry-meta entry-footer">
@@ -419,7 +791,7 @@
 
       
   <span class="ico-tags"></span>
-  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/electron/" rel="tag">electron</a></li></ul>
+  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/typescript/" rel="tag">typescript</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/web/" rel="tag">web</a></li></ul>
 
       
     </footer>
@@ -431,7 +803,7 @@
 <!-- Table of Contents -->
 
   
-    <article id="post-my/code-life"  class="article article-type-post" itemscope itemprop="blogPost" >
+    <article id="post-front/bfc"  class="article article-type-post" itemscope itemprop="blogPost" >
   <div id="articleInner" class="clearfix post-1016 post type-post status-publish format-standard has-post-thumbnail hentry category-template-2 category-uncategorized tag-codex tag-edge-case tag-featured-image tag-image tag-template">
     
     
@@ -439,7 +811,7 @@
         
   
     <h1 class="thumb" itemprop="name">
-      <a class="article-title" href="/2021/05/25/my/code-life/">代码人生</a>
+      <a class="article-title" href="/2022/05/13/front/bfc/">BFC</a>
     </h1>
   
 
@@ -447,72 +819,8 @@
     
     <div class="article-meta">
       
-	<a href="/2021/05/25/my/code-life/" class="article-date">
-	  <time datetime="2021-05-24T16:16:20.457Z" itemprop="datePublished">五月 25, 2021</time>
-	</a>
-
-      
-	<span class="ico-folder"></span>
-    <a class="article-category-link" href="/categories/%E5%90%8E%E8%8A%B1%E5%9B%AD/">后花园</a>
- 
-      
-    </div>
-    <div class="article-entry" itemprop="articleBody">
-      
-        <blockquote>
-<p>经过我多年的开发经验，对于所有程序语言的学习，我觉得无非都要经过如下三个阶段</p>
-</blockquote>
-<h1 id="Code-（源码）"><a href="#Code-（源码）" class="headerlink" title="Code （源码）"></a>Code （源码）</h1><p>需要对该编程语言的语法、规则、原理了然于心。</p>
-<p>熟练编写优雅的功能，深入理解该编程语言在业务使用上的优势和劣势</p>
-<p>可以根据实际情况，选择合适的框架和程序来实现功能</p>
-<p>能深入该编程语言的底层设计思想，理解该语言创造者的目的，能对该语言或相关框架提出相应的改进建议</p>
-<h1 id="Compile（编译）"><a href="#Compile（编译）" class="headerlink" title="Compile（编译）"></a>Compile（编译）</h1><p>理解编译原理，思考为什么源码需要通过编译</p>
-<p>有哪些语言不需要编译即可运行，其存在的优势，以及和编译型语言的对比</p>
-<p>深入认识该语言编译前后的代码对比，了解到为什么需要编译器，思考自己如何实现一个编译器</p>
-<h1 id="Runtime-（运行）"><a href="#Runtime-（运行）" class="headerlink" title="Runtime （运行）"></a>Runtime （运行）</h1><p>清楚的知道，代码在运行时，上下文状态和数据</p>
-<p>有哪些公共能力，代码在真正运行时，会遇到哪些问题，怎么去解决和捕获这些问题</p>
-<p>以及思考为什么会出现这些问题，看看能否在<code>Code</code>层或者<code>Compile</code>层规避掉</p>
-<p>思考：程序运行时，有哪些黑盒，需要去挖掘出这些黑盒的本质，才能提升性能和体验</p>
-
-      
-    </div>
-    <footer class="entry-meta entry-footer">
-      
-	<span class="ico-folder"></span>
-    <a class="article-category-link" href="/categories/%E5%90%8E%E8%8A%B1%E5%9B%AD/">后花园</a>
-
-      
-  <span class="ico-tags"></span>
-  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/%E5%B7%A5%E4%BD%9C/" rel="tag">工作</a></li></ul>
-
-      
-    </footer>
-    <hr class="entry-footer-hr">
-  </div>
-  
-</article>
-
-<!-- Table of Contents -->
-
-  
-    <article id="post-webpack"  class="article article-type-post" itemscope itemprop="blogPost" >
-  <div id="articleInner" class="clearfix post-1016 post type-post status-publish format-standard has-post-thumbnail hentry category-template-2 category-uncategorized tag-codex tag-edge-case tag-featured-image tag-image tag-template">
-    
-    
-      <header class="article-header">
-        
-  
-    <h1 class="thumb" itemprop="name">
-      <a class="article-title" href="/2021/05/25/webpack/">webpack细节</a>
-    </h1>
-  
-
-      </header>
-    
-    <div class="article-meta">
-      
-	<a href="/2021/05/25/webpack/" class="article-date">
-	  <time datetime="2021-05-24T16:11:39.968Z" itemprop="datePublished">五月 25, 2021</time>
+	<a href="/2022/05/13/front/bfc/" class="article-date">
+	  <time datetime="2022-05-13T07:07:18.468Z" itemprop="datePublished">五月 13, 2022</time>
 	</a>
 
       
@@ -523,84 +831,7 @@
     </div>
     <div class="article-entry" itemprop="articleBody">
       
-        <h2 id="概念"><a href="#概念" class="headerlink" title="概念"></a>概念</h2><blockquote>
-<p>module、chunk、bundle</p>
-</blockquote>
-<ul>
-<li><p><strong>module</strong>：就是 js 的模块化 webpack 支持 CommonJS、ES6 等模块化规范，简单来说就是你通过 import 语句引入的代码</p>
-</li>
-<li><p><strong>chunk</strong>：是 webpack 根据功能拆分出来的，包含三种情况：</p>
-<ul>
-<li>你的项目入口（entry）</li>
-<li>通过<code>import()</code>动态引入的代码</li>
-<li>通过<code>splitChunks</code>拆分出来的代码</li>
-</ul>
-</li>
-</ul>
-<blockquote>
-<p>chunk 包含 module，可能是一对多，也可能是一对一</p>
-</blockquote>
-<ul>
-<li><strong>bundle</strong>：是 webpack 打包之后的各个文件，一般就是和 chunk 是一对一的关系，bundle 就是对 chunk 进行编译压缩打包等处理之后的产物</li>
-</ul>
-<p><a target="_blank" rel="noopener" href="https://zhuanlan.zhihu.com/p/152097785">Webpack 之 SplitChunks 插件用法详解：https://zhuanlan.zhihu.com/p/152097785</a></p>
-
-      
-    </div>
-    <footer class="entry-meta entry-footer">
-      
-	<span class="ico-folder"></span>
-    <a class="article-category-link" href="/categories/%E5%A4%A7%E5%89%8D%E7%AB%AF/">大前端</a>
-
-      
-  <span class="ico-tags"></span>
-  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/webpack/" rel="tag">webpack</a></li></ul>
-
-      
-    </footer>
-    <hr class="entry-footer-hr">
-  </div>
-  
-</article>
-
-<!-- Table of Contents -->
-
-  
-    <article id="post-router-in-iframe"  class="article article-type-post" itemscope itemprop="blogPost" >
-  <div id="articleInner" class="clearfix post-1016 post type-post status-publish format-standard has-post-thumbnail hentry category-template-2 category-uncategorized tag-codex tag-edge-case tag-featured-image tag-image tag-template">
-    
-    
-      <header class="article-header">
         
-  
-    <h1 class="thumb" itemprop="name">
-      <a class="article-title" href="/2021/05/25/router-in-iframe/">在iframe里面使用react-router</a>
-    </h1>
-  
-
-      </header>
-    
-    <div class="article-meta">
-      
-	<a href="/2021/05/25/router-in-iframe/" class="article-date">
-	  <time datetime="2021-05-24T16:11:39.951Z" itemprop="datePublished">五月 25, 2021</time>
-	</a>
-
-      
-	<span class="ico-folder"></span>
-    <a class="article-category-link" href="/categories/%E5%A4%A7%E5%89%8D%E7%AB%AF/">大前端</a>
- 
-      
-    </div>
-    <div class="article-entry" itemprop="articleBody">
-      
-        <h1 id="说明"><a href="#说明" class="headerlink" title="说明"></a>说明</h1><blockquote>
-<p>iframe 里面嵌入一个基于 HTML5 history 的现代网站，如果需要调用最顶层的浏览器路由（即路由地址体现在地址栏，而不是在 iframe 内的沙箱中）</p>
-<p>那么该嵌入的代码就需要添加如下逻辑，去调用父容器的浏览器地址逻辑，这样页面的路由切换也将在浏览器的地址栏有所展示</p>
-<p>否则，在 iframe 嵌入单页应用的页面时，在单页路由切换时，浏览器的地址栏不会发生任何变化，会导致页面刷新后，无法正常定位网页内容</p>
-</blockquote>
-<h1 id="实现代码"><a href="#实现代码" class="headerlink" title="实现代码"></a>实现代码</h1><figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> &#123; history <span class="keyword">as</span> RouterHistory &#125; <span class="keyword">from</span> <span class="string">&quot;award-router&quot;</span>;</span><br><span class="line"><span class="keyword">import</span> &#123; createLocation &#125; <span class="keyword">from</span> <span class="string">&quot;history&quot;</span>;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">hasBasename</span>(<span class="params">path, prefix</span>) </span>&#123;</span><br><span class="line">  <span class="keyword">return</span> (</span><br><span class="line">    path.toLowerCase().indexOf(prefix.toLowerCase()) === <span class="number">0</span> &amp;&amp;</span><br><span class="line">    <span class="string">&quot;/?#&quot;</span>.indexOf(path.charAt(prefix.length)) !== <span class="number">-1</span></span><br><span class="line">  );</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">stripBasename</span>(<span class="params">path, prefix</span>) </span>&#123;</span><br><span class="line">  <span class="keyword">return</span> hasBasename(path, prefix) ? path.substr(prefix.length) : path;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * 路由系统全部交给parent管理</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="keyword">let</span> parentHistory = <span class="built_in">window</span>.parent.history;</span><br><span class="line"><span class="keyword">let</span> localReplaceState = history.replaceState;</span><br><span class="line">history.pushState = <span class="function"><span class="keyword">function</span> (<span class="params"></span>) </span>&#123;</span><br><span class="line">  <span class="comment">// console.log(&#x27;pushState&#x27;, arguments);</span></span><br><span class="line">  <span class="keyword">if</span> (<span class="built_in">arguments</span>[<span class="number">0</span>] &amp;&amp; <span class="built_in">arguments</span>[<span class="number">0</span>].state === <span class="string">&quot;null&quot;</span>) &#123;</span><br><span class="line">    <span class="keyword">return</span>;</span><br><span class="line">  &#125;</span><br><span class="line">  parentHistory.pushState.apply(parentHistory, <span class="built_in">arguments</span>);</span><br><span class="line">  localReplaceState.apply(history, <span class="built_in">arguments</span>);</span><br><span class="line">&#125;;</span><br><span class="line">history.replaceState = <span class="function"><span class="keyword">function</span> (<span class="params"></span>) </span>&#123;</span><br><span class="line">  <span class="comment">// console.log(&#x27;replaceState&#x27;, arguments);</span></span><br><span class="line">  parentHistory.replaceState.apply(parentHistory, <span class="built_in">arguments</span>);</span><br><span class="line">  localReplaceState.apply(history, <span class="built_in">arguments</span>);</span><br><span class="line">&#125;;</span><br><span class="line"><span class="built_in">window</span>.parent.addEventListener(<span class="string">&quot;popstate&quot;</span>, <span class="function"><span class="keyword">function</span> (<span class="params">e</span>) </span>&#123;</span><br><span class="line">  <span class="comment">// 这里其实路由已经发生变化了，只是react-router的组件没有按照正确的渲染，这里就是要让他进行渲染</span></span><br><span class="line">  <span class="keyword">let</span> _ref = e.state || &#123;&#125;;</span><br><span class="line">  <span class="keyword">let</span> key = _ref.key;</span><br><span class="line">  <span class="keyword">let</span> state = _ref.state;</span><br><span class="line"></span><br><span class="line">  <span class="keyword">let</span> _window$location = <span class="built_in">window</span>.parent.location;</span><br><span class="line">  <span class="keyword">let</span> pathname = _window$location.pathname;</span><br><span class="line">  <span class="keyword">let</span> search = _window$location.search;</span><br><span class="line">  <span class="keyword">let</span> hash = _window$location.hash;</span><br><span class="line">  <span class="keyword">let</span> path = pathname + search + hash;</span><br><span class="line">  path = stripBasename(path, <span class="string">&quot;/gatekeeper/lego&quot;</span>);</span><br><span class="line">  <span class="keyword">const</span> location = createLocation(path, state, key);</span><br><span class="line">  localReplaceState.apply(history, [</span><br><span class="line">    <span class="string">&quot;&quot;</span>,</span><br><span class="line">    <span class="string">&quot;&quot;</span>,</span><br><span class="line">    location.pathname + location.search,</span><br><span class="line">  ]);</span><br><span class="line">  RouterHistory.push(&#123;</span><br><span class="line">    pathname: location.pathname,</span><br><span class="line">    search: location.search,</span><br><span class="line">    state: <span class="string">&quot;null&quot;</span>,</span><br><span class="line">  &#125;);</span><br><span class="line">&#125;);</span><br></pre></td></tr></table></figure>
-
       
     </div>
     <footer class="entry-meta entry-footer">
@@ -611,192 +842,6 @@
       
   <span class="ico-tags"></span>
   <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/web/" rel="tag">web</a></li></ul>
-
-      
-    </footer>
-    <hr class="entry-footer-hr">
-  </div>
-  
-</article>
-
-<!-- Table of Contents -->
-
-  
-    <article id="post-go/mongo"  class="article article-type-post" itemscope itemprop="blogPost" >
-  <div id="articleInner" class="clearfix post-1016 post type-post status-publish format-standard has-post-thumbnail hentry category-template-2 category-uncategorized tag-codex tag-edge-case tag-featured-image tag-image tag-template">
-    
-    
-      <header class="article-header">
-        
-  
-    <h1 class="thumb" itemprop="name">
-      <a class="article-title" href="/2021/05/25/go/mongo/">go语言之mongo-db操作</a>
-    </h1>
-  
-
-      </header>
-    
-    <div class="article-meta">
-      
-	<a href="/2021/05/25/go/mongo/" class="article-date">
-	  <time datetime="2021-05-24T16:11:39.940Z" itemprop="datePublished">五月 25, 2021</time>
-	</a>
-
-      
-	<span class="ico-folder"></span>
-    <a class="article-category-link" href="/categories/%E6%9C%8D%E5%8A%A1%E7%AB%AF/">服务端</a>
- 
-      
-    </div>
-    <div class="article-entry" itemprop="articleBody">
-      
-        <blockquote>
-<p>主要罗列出使用 go 语言操作 mongo 的一些细节和注意事项</p>
-<p>基于<code>go.mongodb.org/mongo-driver</code></p>
-</blockquote>
-<h2 id="连接-mongo-db"><a href="#连接-mongo-db" class="headerlink" title="连接 mongo-db"></a>连接 mongo-db</h2><figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">package</span> main</span><br><span class="line"></span><br><span class="line"><span class="keyword">import</span> (</span><br><span class="line">    <span class="string">&quot;context&quot;</span></span><br><span class="line">    <span class="string">&quot;fmt&quot;</span></span><br><span class="line"></span><br><span class="line">    <span class="string">&quot;go.mongodb.org/mongo-driver/mongo&quot;</span></span><br><span class="line">    <span class="string">&quot;go.mongodb.org/mongo-driver/mongo/options&quot;</span></span><br><span class="line">)</span><br><span class="line"></span><br><span class="line"><span class="comment">// Db mongo</span></span><br><span class="line"><span class="keyword">var</span> Db *mongo.Client</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">main</span><span class="params">()</span></span> &#123;</span><br><span class="line">    <span class="comment">// 设置客户端连接配置</span></span><br><span class="line">    clientOptions := options.Client().ApplyURI(<span class="string">&quot;mongodb://192.168.41.11:6300&quot;</span>)</span><br><span class="line"></span><br><span class="line">    <span class="comment">// 连接到MongoDB</span></span><br><span class="line">    client, err := mongo.Connect(context.TODO(), clientOptions)</span><br><span class="line">    <span class="keyword">if</span> err != <span class="literal">nil</span> &#123;</span><br><span class="line">        <span class="built_in">panic</span>(<span class="string">&quot;mongodb创建失败&quot;</span> + err.Error())</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">// 检查连接</span></span><br><span class="line">    err = client.Ping(context.TODO(), <span class="literal">nil</span>)</span><br><span class="line">    <span class="keyword">if</span> err != <span class="literal">nil</span> &#123;</span><br><span class="line">        <span class="built_in">panic</span>(<span class="string">&quot;mongodb连接失败&quot;</span> + err.Error())</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    Db = client</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<h1 id=""><a href="#" class="headerlink" title="#"></a>#</h1>
-      
-    </div>
-    <footer class="entry-meta entry-footer">
-      
-	<span class="ico-folder"></span>
-    <a class="article-category-link" href="/categories/%E6%9C%8D%E5%8A%A1%E7%AB%AF/">服务端</a>
-
-      
-  <span class="ico-tags"></span>
-  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/go/" rel="tag">go</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/mongo/" rel="tag">mongo</a></li></ul>
-
-      
-    </footer>
-    <hr class="entry-footer-hr">
-  </div>
-  
-</article>
-
-<!-- Table of Contents -->
-
-  
-    <article id="post-my/fund"  class="article article-type-post" itemscope itemprop="blogPost" >
-  <div id="articleInner" class="clearfix post-1016 post type-post status-publish format-standard has-post-thumbnail hentry category-template-2 category-uncategorized tag-codex tag-edge-case tag-featured-image tag-image tag-template">
-    
-    
-      <header class="article-header">
-        
-  
-    <h1 class="thumb" itemprop="name">
-      <a class="article-title" href="/2021/05/25/my/fund/">基金净值期望计算公式</a>
-    </h1>
-  
-
-      </header>
-    
-    <div class="article-meta">
-      
-	<a href="/2021/05/25/my/fund/" class="article-date">
-	  <time datetime="2021-05-24T16:11:39.938Z" itemprop="datePublished">五月 25, 2021</time>
-	</a>
-
-      
-	<span class="ico-folder"></span>
-    <a class="article-category-link" href="/categories/%E5%90%8E%E8%8A%B1%E5%9B%AD/">后花园</a>
- 
-      
-    </div>
-    <div class="article-entry" itemprop="articleBody">
-      
-        <script type="math/tex; mode=display">
-\gamma = \frac{∆\alpha}{∆\beta} -1</script><ul>
-<li>$\gamma$ <strong>购买力期望系数</strong></li>
-<li>$∆\alpha$ <strong>已经购买的净值</strong> $-$ <strong>当天收盘净值</strong></li>
-<li>$∆\beta$ <strong>期望达到的净值</strong> $-$ <strong>当天收盘净值</strong><script type="math/tex; mode=display">
-N = \gamma * M</script></li>
-<li>$N$ <strong>购买的份额数</strong></li>
-<li>$M$ <strong>已购买的基金份额</strong></li>
-</ul>
-<script type="math/tex; mode=display">
-C = N * p</script><ul>
-<li>$C$ <strong>需要投入的资金</strong></li>
-<li>$p$ <strong>购买时当天收盘净值</strong></li>
-</ul>
-<blockquote>
-<ol>
-<li>当$lim_{∆\beta \to 0}$时，$N$的值将趋于$\infty$，$C$ 也将趋于$\infty$</li>
-<li>当$lim<em>{\frac{∆\alpha}{∆\beta}\to 1}$时，$lim</em>{\gamma \to 0}$，$C$ 将趋于 $0$</li>
-</ol>
-<p>✅ 坚持低位定投，当$C$为负数时，将开始获得收益</p>
-</blockquote>
-
-      
-    </div>
-    <footer class="entry-meta entry-footer">
-      
-	<span class="ico-folder"></span>
-    <a class="article-category-link" href="/categories/%E5%90%8E%E8%8A%B1%E5%9B%AD/">后花园</a>
-
-      
-  <span class="ico-tags"></span>
-  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/%E6%8A%95%E8%B5%84/" rel="tag">投资</a></li></ul>
-
-      
-    </footer>
-    <hr class="entry-footer-hr">
-  </div>
-  
-</article>
-
-<!-- Table of Contents -->
-
-  
-    <article id="post-docker/dockerfile-file"  class="article article-type-post" itemscope itemprop="blogPost" >
-  <div id="articleInner" class="clearfix post-1016 post type-post status-publish format-standard has-post-thumbnail hentry category-template-2 category-uncategorized tag-codex tag-edge-case tag-featured-image tag-image tag-template">
-    
-    
-      <header class="article-header">
-        
-  
-    <h1 class="thumb" itemprop="name">
-      <a class="article-title" href="/2021/05/25/docker/dockerfile-file/">dockerfile编写细节</a>
-    </h1>
-  
-
-      </header>
-    
-    <div class="article-meta">
-      
-	<a href="/2021/05/25/docker/dockerfile-file/" class="article-date">
-	  <time datetime="2021-05-24T16:11:39.935Z" itemprop="datePublished">五月 25, 2021</time>
-	</a>
-
-      
-	<span class="ico-folder"></span>
-    <a class="article-category-link" href="/categories/%E6%9C%8D%E5%8A%A1%E7%AB%AF/">服务端</a>
- 
-      
-    </div>
-    <div class="article-entry" itemprop="articleBody">
-      
-        <h2 id="编译-部署"><a href="#编译-部署" class="headerlink" title="编译 + 部署"></a>编译 + 部署</h2><blockquote>
-<p>通常我们需要在一个指定的目标环境进行代码的编译，比如<code>nodejs12</code>、<code>golang:1.15</code>等环境</p>
-<p>那么我们就可以编写 dockerfile 来实现</p>
-</blockquote>
-<p><strong>前提：一个 dockerfile 有且只有一个基础镜像，比如在生产环境运行时，其实不需要大而全的 nodejs 包，只需要一个小而美的即可</strong></p>
-<p><img src="/assets/images/post_imgs/node12.19.0.png" alt="node:12.19.0，基础镜像300多M"><br><img src="/assets/images/post_imgs/node12.19.0-alpine.png" alt="node:12.19.0-alpine，基础镜像不到30M"></p>
-<figure class="highlight dockerfile"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br></pre></td><td class="code"><pre><span class="line"></span><br><span class="line"><span class="comment"># 使用node:12.19.0镜像编译源代码</span></span><br><span class="line"><span class="keyword">FROM</span> node:<span class="number">12.19</span>.<span class="number">0</span> AS build</span><br><span class="line"><span class="keyword">WORKDIR</span><span class="bash"> /code</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">COPY</span><span class="bash"> . .</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># 安装依赖，将TS代码编译为ES5代码</span></span><br><span class="line"><span class="comment"># 导出到当前目录 dist</span></span><br><span class="line"><span class="keyword">RUN</span><span class="bash"> yarn</span></span><br><span class="line"><span class="keyword">RUN</span><span class="bash"> yarn build</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># 只安装生产环境运行需要的依赖</span></span><br><span class="line"><span class="comment"># 比如类似TypeScript、webpack、babel等依赖就不必安装了，减少目标镜像的体积</span></span><br><span class="line"><span class="keyword">RUN</span><span class="bash"> rm -rf node_modules</span></span><br><span class="line"><span class="keyword">RUN</span><span class="bash"> yarn install --production</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># 使用最小的node镜像运行node服务</span></span><br><span class="line"><span class="keyword">FROM</span> node:<span class="number">12.19</span>.<span class="number">0</span>-alpine</span><br><span class="line"></span><br><span class="line"><span class="keyword">WORKDIR</span><span class="bash"> /code</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># 拷贝编译后的资源到当前镜像内</span></span><br><span class="line"><span class="keyword">COPY</span><span class="bash"> --from=build /code/dist /code/server</span></span><br><span class="line"><span class="keyword">COPY</span><span class="bash"> --from=build /code/node_modules /code/node_modules</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">CMD</span><span class="bash"> [<span class="string">&quot;node&quot;</span>, <span class="string">&quot;server&quot;</span>]</span></span><br><span class="line"></span><br></pre></td></tr></table></figure>
-<h2 id="动态的dockerfile"><a href="#动态的dockerfile" class="headerlink" title="动态的dockerfile"></a>动态的dockerfile</h2><p>示例</p>
-<figure class="highlight dockerfile"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 声明获取docker build时的动态传参</span></span><br><span class="line"><span class="keyword">ARG</span> VERSION</span><br><span class="line"></span><br><span class="line"><span class="comment"># 可以同时引入多个镜像包</span></span><br><span class="line"><span class="keyword">FROM</span> source1:$VERSION AS source1-build</span><br><span class="line"><span class="keyword">FROM</span> source2:$VERSION AS source2-build</span><br><span class="line"><span class="keyword">FROM</span> source3:$VERSION AS source3-build</span><br><span class="line"></span><br><span class="line"><span class="keyword">FROM</span> final:alpine</span><br><span class="line"></span><br><span class="line"><span class="keyword">WORKDIR</span><span class="bash"> /code</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># 如果这里需要VERSION,还需要再通过声明获取</span></span><br><span class="line"><span class="keyword">ARG</span> VERSION</span><br><span class="line"><span class="keyword">RUN</span><span class="bash"> <span class="built_in">echo</span> <span class="variable">$VERSION</span></span></span><br><span class="line"></span><br><span class="line"><span class="keyword">COPY</span><span class="bash"> --from=source1-build /code/dist /code/source1-build</span></span><br><span class="line"><span class="keyword">COPY</span><span class="bash"> --from=source2-build /code/dist /code/source2-build</span></span><br><span class="line"><span class="keyword">COPY</span><span class="bash"> --from=source3-build /code/dist /code/source3-build</span></span><br><span class="line"></span><br></pre></td></tr></table></figure>
-<p>通过该dockerfile，制作最终的镜像命令</p>
-<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">version=1.0.0</span><br><span class="line">docker build --build-arg VERSION=$&#123;version&#125; -f dockerfile -t source:$version .</span><br></pre></td></tr></table></figure>
-      
-    </div>
-    <footer class="entry-meta entry-footer">
-      
-	<span class="ico-folder"></span>
-    <a class="article-category-link" href="/categories/%E6%9C%8D%E5%8A%A1%E7%AB%AF/">服务端</a>
-
-      
-  <span class="ico-tags"></span>
-  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/docker/" rel="tag">docker</a></li></ul>
 
       
     </footer>
@@ -917,8 +962,8 @@ C = N * p</script><ul>
               <div class="widget-entry-summary" style="margin: 0;">
             
 
-              <h6 style="margin: 0;"><a href="/2022/01/12/nodejs/mvc/">基于koa，自定义简单的MVC项目结构</a></h6>
-              <span>一月 12, 2022</span>
+              <h6 style="margin: 0;"><a href="/2022/05/13/secret/">加密技术漫谈</a></h6>
+              <span>五月 13, 2022</span>
             </div>
 
           </li>
@@ -929,8 +974,8 @@ C = N * p</script><ul>
               <div class="widget-entry-summary" style="margin: 0;">
             
 
-              <h6 style="margin: 0;"><a href="/2021/12/09/front/chrome/">跨域浏览器</a></h6>
-              <span>十二月 9, 2021</span>
+              <h6 style="margin: 0;"><a href="/2022/05/13/tips/">小知识</a></h6>
+              <span>五月 13, 2022</span>
             </div>
 
           </li>
@@ -941,8 +986,8 @@ C = N * p</script><ul>
               <div class="widget-entry-summary" style="margin: 0;">
             
 
-              <h6 style="margin: 0;"><a href="/2021/11/19/leetcode/%E6%96%B0%E7%88%AC%E6%A5%BC%E6%A2%AF/">新爬楼梯(一步登天)(列出具体爬法)</a></h6>
-              <span>十一月 19, 2021</span>
+              <h6 style="margin: 0;"><a href="/2022/05/13/webpack/">webpack细节</a></h6>
+              <span>五月 13, 2022</span>
             </div>
 
           </li>
@@ -953,8 +998,8 @@ C = N * p</script><ul>
               <div class="widget-entry-summary" style="margin: 0;">
             
 
-              <h6 style="margin: 0;"><a href="/2021/11/18/k8s/start/">部署运行k8s</a></h6>
-              <span>十一月 18, 2021</span>
+              <h6 style="margin: 0;"><a href="/2022/05/13/router-in-iframe/">在iframe里面使用react-router</a></h6>
+              <span>五月 13, 2022</span>
             </div>
 
           </li>
@@ -965,8 +1010,8 @@ C = N * p</script><ul>
               <div class="widget-entry-summary" style="margin: 0;">
             
 
-              <h6 style="margin: 0;"><a href="/2021/11/17/front/TypeScript%E6%B3%9B%E5%9E%8B/">泛型典型示例</a></h6>
-              <span>十一月 17, 2021</span>
+              <h6 style="margin: 0;"><a href="/2022/05/13/my/top/">职业闲谈</a></h6>
+              <span>五月 13, 2022</span>
             </div>
 
           </li>
@@ -1010,7 +1055,7 @@ C = N * p</script><ul>
     <h3 class="widget-title">归档</h3>
 
     <div class="widget">
-      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2022/08/">八月 2022</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2022/01/">一月 2022</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2021/12/">十二月 2021</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2021/11/">十一月 2021</a><span class="archive-list-count">5</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2021/10/">十月 2021</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2021/09/">九月 2021</a><span class="archive-list-count">2</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2021/08/">八月 2021</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2021/05/">五月 2021</a><span class="archive-list-count">8</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/12/">十二月 2020</a><span class="archive-list-count">2</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/11/">十一月 2020</a><span class="archive-list-count">3</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/08/">八月 2020</a><span class="archive-list-count">1</span></li></ul>
+      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2022/08/">八月 2022</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2022/05/">五月 2022</a><span class="archive-list-count">25</span></li></ul>
     </div>
   </div>
 
@@ -1060,11 +1105,6 @@ C = N * p</script><ul>
 
 
     <!-- headerblur min height -->
-    
-      var headerblur = document.getElementById("header-blur");
-      if(headerblur){
-        headerblur.style.minHeight = window.getComputedStyle(document.getElementById("allheader"), null).height;
-      }
     
     
 </script>
