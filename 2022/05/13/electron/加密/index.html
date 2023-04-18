@@ -1,3 +1,5 @@
+
+
 <!DOCTYPE html>
 <html>
 
@@ -176,7 +178,9 @@
             
       <div id="content" class="outer">
         
-          <section id="main" style="float:none;"><article id="post-electron/加密" style="width: 66%; float:left;" class="article article-type-post" itemscope itemprop="blogPost" >
+          <section id="main" style="float:none;">
+
+<article id="post-electron/加密" style="width: 66%; float:left;" class="article article-type-post" itemscope itemprop="blogPost" >
   <div id="articleInner" class="clearfix post-1016 post type-post status-publish format-standard has-post-thumbnail hentry category-template-2 category-uncategorized tag-codex tag-edge-case tag-featured-image tag-image tag-template">
     
     
@@ -266,19 +270,19 @@
     
 <nav id="article-nav">
   
-    <a href="/2022/05/13/front/SEO%E7%AD%96%E7%95%A5%E4%B9%8B%E9%A1%B5%E9%9D%A2%E7%9B%B4%E5%87%BA/" id="article-nav-newer" class="article-nav-link-wrap">
+    <a href="/2022/05/13/front/chrome/" id="article-nav-newer" class="article-nav-link-wrap">
       <strong class="article-nav-caption">上一篇</strong>
       <div class="article-nav-title">
         
-          SEO策略之页面直出
+          跨域浏览器
         
       </div>
     </a>
   
   
-    <a href="/2022/05/13/cross-domain/" id="article-nav-older" class="article-nav-link-wrap">
+    <a href="/2022/05/13/front/Redux&TypeScript%E6%9C%80%E4%BD%B3%E5%AE%9E%E8%B7%B5/" id="article-nav-older" class="article-nav-link-wrap">
       <strong class="article-nav-caption">下一篇</strong>
-      <div class="article-nav-title">跨域漫谈</div>
+      <div class="article-nav-title">Redux + TypeScript最佳实践</div>
     </a>
   
 </nav>
@@ -296,6 +300,8 @@
     
     </div>
   </aside>
+
+
 </section>
         
       </div>
@@ -340,6 +346,11 @@
 
 
     <!-- headerblur min height -->
+    
+      var headerblur = document.getElementById("header-blur");
+      if(headerblur){
+        headerblur.style.minHeight = window.getComputedStyle(document.getElementById("allheader"), null).height;
+      }
     
     
 </script>
@@ -416,3 +427,5 @@
   <script type="text/javascript" src="/js/totop.js" async=""></script>
 </body>
 </html>
+
+

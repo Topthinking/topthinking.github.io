@@ -1,3 +1,5 @@
+
+
 <!DOCTYPE html>
 <html>
 
@@ -554,6 +556,11 @@
 
     <!-- headerblur min height -->
     
+      var headerblur = document.getElementById("header-blur");
+      if(headerblur){
+        headerblur.style.minHeight = window.getComputedStyle(document.getElementById("allheader"), null).height;
+      }
+    
     
 </script>
     
@@ -629,3 +636,5 @@
   <script type="text/javascript" src="/js/totop.js" async=""></script>
 </body>
 </html>
+
+

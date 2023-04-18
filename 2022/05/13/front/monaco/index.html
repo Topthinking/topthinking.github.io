@@ -1,3 +1,5 @@
+
+
 <!DOCTYPE html>
 <html>
 
@@ -173,7 +175,9 @@
             
       <div id="content" class="outer">
         
-          <section id="main" style="float:none;"><article id="post-front/monaco" style="width: 66%; float:left;" class="article article-type-post" itemscope itemprop="blogPost" >
+          <section id="main" style="float:none;">
+
+<article id="post-front/monaco" style="width: 66%; float:left;" class="article article-type-post" itemscope itemprop="blogPost" >
   <div id="articleInner" class="clearfix post-1016 post type-post status-publish format-standard has-post-thumbnail hentry category-template-2 category-uncategorized tag-codex tag-edge-case tag-featured-image tag-image tag-template">
     
     
@@ -284,6 +288,8 @@
     
     </div>
   </aside>
+
+
 </section>
         
       </div>
@@ -328,6 +334,11 @@
 
 
     <!-- headerblur min height -->
+    
+      var headerblur = document.getElementById("header-blur");
+      if(headerblur){
+        headerblur.style.minHeight = window.getComputedStyle(document.getElementById("allheader"), null).height;
+      }
     
     
 </script>
@@ -404,3 +415,5 @@
   <script type="text/javascript" src="/js/totop.js" async=""></script>
 </body>
 </html>
+
+

@@ -1,3 +1,5 @@
+
+
 <!DOCTYPE html>
 <html>
 
@@ -196,6 +198,8 @@
             
                 <a href="#docker" title="docker" rel="2">docker</a>
             
+                <a href="#electron" title="electron" rel="1">electron</a>
+            
                 <a href="#redux" title="redux" rel="1">redux</a>
             
                 <a href="#typescript" title="typescript" rel="2">typescript</a>
@@ -205,8 +209,6 @@
                 <a href="#浏览器" title="浏览器" rel="1">浏览器</a>
             
                 <a href="#react" title="react" rel="1">react</a>
-            
-                <a href="#electron" title="electron" rel="1">electron</a>
             
                 <a href="#go" title="go" rel="3">go</a>
             
@@ -1317,6 +1319,11 @@
 
     <!-- headerblur min height -->
     
+      var headerblur = document.getElementById("header-blur");
+      if(headerblur){
+        headerblur.style.minHeight = window.getComputedStyle(document.getElementById("allheader"), null).height;
+      }
+    
     
 </script>
     
@@ -1392,3 +1399,5 @@
   <script type="text/javascript" src="/js/totop.js" async=""></script>
 </body>
 </html>
+
+

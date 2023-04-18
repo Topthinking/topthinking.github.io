@@ -1,3 +1,5 @@
+
+
 <!DOCTYPE html>
 <html>
 
@@ -176,7 +178,9 @@
             
       <div id="content" class="outer">
         
-          <section id="main" style="float:none;"><article id="post-my/code-life" style="width: 66%; float:left;" class="article article-type-post" itemscope itemprop="blogPost" >
+          <section id="main" style="float:none;">
+
+<article id="post-my/code-life" style="width: 66%; float:left;" class="article article-type-post" itemscope itemprop="blogPost" >
   <div id="articleInner" class="clearfix post-1016 post type-post status-publish format-standard has-post-thumbnail hentry category-template-2 category-uncategorized tag-codex tag-edge-case tag-featured-image tag-image tag-template">
     
     
@@ -263,19 +267,19 @@
     
 <nav id="article-nav">
   
-    <a href="/2022/05/13/leetcode/%E6%9C%80%E5%A4%A7%E5%AD%90%E5%BA%8F%E5%92%8C/" id="article-nav-newer" class="article-nav-link-wrap">
+    <a href="/2022/05/13/nodejs/mvc/" id="article-nav-newer" class="article-nav-link-wrap">
       <strong class="article-nav-caption">上一篇</strong>
       <div class="article-nav-title">
         
-          最大子序和
+          基于koa，自定义简单的MVC项目结构
         
       </div>
     </a>
   
   
-    <a href="/2022/05/13/my/fund/" id="article-nav-older" class="article-nav-link-wrap">
+    <a href="/2022/05/13/leetcode/%E6%9C%80%E5%A4%A7%E5%AD%90%E5%BA%8F%E5%92%8C/" id="article-nav-older" class="article-nav-link-wrap">
       <strong class="article-nav-caption">下一篇</strong>
-      <div class="article-nav-title">基金净值期望计算公式</div>
+      <div class="article-nav-title">最大子序和</div>
     </a>
   
 </nav>
@@ -293,6 +297,8 @@
     
     </div>
   </aside>
+
+
 </section>
         
       </div>
@@ -337,6 +343,11 @@
 
 
     <!-- headerblur min height -->
+    
+      var headerblur = document.getElementById("header-blur");
+      if(headerblur){
+        headerblur.style.minHeight = window.getComputedStyle(document.getElementById("allheader"), null).height;
+      }
     
     
 </script>
@@ -413,3 +424,5 @@
   <script type="text/javascript" src="/js/totop.js" async=""></script>
 </body>
 </html>
+
+

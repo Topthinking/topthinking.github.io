@@ -1,3 +1,5 @@
+
+
 <!DOCTYPE html>
 <html>
 
@@ -12,15 +14,15 @@
   
   
   
-  <meta name="description" content="curl -L &quot;https:&#x2F;&#x2F;packages.gitlab.com&#x2F;install&#x2F;repositories&#x2F;runner&#x2F;gitlab-runner&#x2F;script.rpm.sh&quot; | sudo bash  sudo yum install gitlab-runner  sudo gitlab-runner register   gitlab runner root权限">
+  <meta name="description" content="curl -L &quot;https:&#x2F;&#x2F;packages.gitlab.com&#x2F;install&#x2F;repositories&#x2F;runner&#x2F;gitlab-runner&#x2F;script.rpm.sh&quot; | sudo bash  sudo yum install gitlab-runner  sudo gitlab-runner register   gitlab runner root权">
 <meta property="og:type" content="article">
 <meta property="og:title" content="安装gitlab runner">
 <meta property="og:url" content="https://topthinking.gitee.io/2022/08/02/gitlab-ci/index.html">
 <meta property="og:site_name" content="Topthinking">
-<meta property="og:description" content="curl -L &quot;https:&#x2F;&#x2F;packages.gitlab.com&#x2F;install&#x2F;repositories&#x2F;runner&#x2F;gitlab-runner&#x2F;script.rpm.sh&quot; | sudo bash  sudo yum install gitlab-runner  sudo gitlab-runner register   gitlab runner root权限">
+<meta property="og:description" content="curl -L &quot;https:&#x2F;&#x2F;packages.gitlab.com&#x2F;install&#x2F;repositories&#x2F;runner&#x2F;gitlab-runner&#x2F;script.rpm.sh&quot; | sudo bash  sudo yum install gitlab-runner  sudo gitlab-runner register   gitlab runner root权">
 <meta property="og:locale" content="zh_CN">
 <meta property="article:published_time" content="2022-08-02T08:45:09.142Z">
-<meta property="article:modified_time" content="2022-08-02T08:47:04.015Z">
+<meta property="article:modified_time" content="2023-04-18T03:21:51.051Z">
 <meta property="article:author" content="topthinking">
 <meta property="article:tag" content="web">
 <meta name="twitter:card" content="summary">
@@ -176,7 +178,9 @@
             
       <div id="content" class="outer">
         
-          <section id="main" style="float:none;"><article id="post-gitlab-ci" style="width: 66%; float:left;" class="article article-type-post" itemscope itemprop="blogPost" >
+          <section id="main" style="float:none;">
+
+<article id="post-gitlab-ci" style="width: 66%; float:left;" class="article article-type-post" itemscope itemprop="blogPost" >
   <div id="articleInner" class="clearfix post-1016 post type-post status-publish format-standard has-post-thumbnail hentry category-template-2 category-uncategorized tag-codex tag-edge-case tag-featured-image tag-image tag-template">
     
     
@@ -204,7 +208,8 @@
     </div>
     <div class="article-entry" itemprop="articleBody">
       
-        <ol>
+        <a id="more"></a>
+<ol>
 <li><p><code>curl -L &quot;https://packages.gitlab.com/install/repositories/runner/gitlab-runner/script.rpm.sh&quot; | sudo bash</code></p>
 </li>
 <li><p><code>sudo yum install gitlab-runner</code></p>
@@ -288,6 +293,8 @@
     
     </div>
   </aside>
+
+
 </section>
         
       </div>
@@ -332,6 +339,11 @@
 
 
     <!-- headerblur min height -->
+    
+      var headerblur = document.getElementById("header-blur");
+      if(headerblur){
+        headerblur.style.minHeight = window.getComputedStyle(document.getElementById("allheader"), null).height;
+      }
     
     
 </script>
@@ -408,3 +420,5 @@
   <script type="text/javascript" src="/js/totop.js" async=""></script>
 </body>
 </html>
+
+
